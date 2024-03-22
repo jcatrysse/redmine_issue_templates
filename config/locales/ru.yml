@@ -1,6 +1,6 @@
 # Russian strings go here for Rails i18n
 ru:
-  issue_templates: Шаблоны задач
+  issue_templates: Шаблоны
   issue_template: Шаблон задачи
   issue_template_note: Шаблон комментария
   label_enabled: Включено
@@ -21,7 +21,7 @@ ru:
   permission_manage_issue_templates: "Управление шаблонами"
   permission_edit_issue_templates: "Редактировать шаблоны"
   permission_show_issue_templates: "Показывать шаблоны"
-  project_module_issue_templates: "Шаблоны задач"
+  project_module_issue_templates: "Шаблоны"
   label_isdefault_help_message: "Если параметр установлен, шаблон будет применяться автоматически при создании новой задачи для соответствующего трекера."
   defaulf_template_loaded: "В поле описания задачи подставлен шаблон по умолчанию. (Трекер: %{tracker})"
   text_no_tracker_enabled: "Для проекта не настроен ни один трекер.\nПожалуйста, сначала настройте трекеры, так как шаблоны должны быть связаны с трекерами."
@@ -57,9 +57,9 @@ ru:
   orphaned_template: "Потерянный шаблон из трекера"
   label_template_applied: "Шаблон задачи применен. Вы можете отменить это нажав 'Восстановить'"
   label_hide_confirm_dialog_in_the_future: "Скройте это подтверждение в будущем, просто замените"
-  label_template_for_note: "Шаблон для комментария"
+  label_template_for_note: "Шаблон комментария"
   label_use_template_when_edit: "Использовать шаблоны при редактировании задачи"
-  note_template: "Шаблон для комментария"
+  note_template: "Шаблон комментария"
   no_note_templates_for_this_project: "Для этого проекта не определены шаблоны комментариев"
   label_memo_help_message: "Пожалуйста, заполните комментарий-пояснение при применении этого шаблона"
   note_template_name: "Имя шаблона для комментария"
