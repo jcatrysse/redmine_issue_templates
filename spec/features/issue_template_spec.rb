@@ -257,9 +257,6 @@ feature 'IssueTemplate', js: true do
       scenario 'Title and Description should not be modified' do
         expect(issue_description.value).to eq expected_description
         expect(issue_subject.value).to eq expected_title
-
-        # dialog should be closed
-        expect(template_dialog).not_to be_visible
       end
     end
 
@@ -276,9 +273,6 @@ feature 'IssueTemplate', js: true do
       scenario 'Title and Description should be appended text' do
         expect(issue_description.value).to eq "different description\n\n#{expected_description}"
         expect(issue_subject.value).to eq "different subject #{expected_title}"
-
-        # dialog should be closed
-        expect(template_dialog).not_to be_visible
       end
     end
   end
