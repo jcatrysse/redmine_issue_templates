@@ -47,6 +47,12 @@ class GlobalNoteTemplatesController < ApplicationController
     # Workaround in case author id is null
     @global_note_template.author = User.current if @global_note_template.author.blank?
     @global_note_template.safe_attributes = template_params
+    @global_note_template.role_ids =
+      if template_params.key?(:role_ids)
+        template_params[:role_ids]
+      else
+        @global_note_template.global_note_visible_roles.pluck(:role_id)
+      end
 
     save_and_flash(:notice_successful_update, :show)
   end
