@@ -35,6 +35,7 @@ div.issue_template {
     color: #31708f;
     background: #eaf5fb url("../images/lamp.png") no-repeat 3px center;
     border: solid #a7e4fd 1px;
+    pointer-events: none;
 }
 
 #field_information {
