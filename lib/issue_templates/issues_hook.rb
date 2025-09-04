@@ -35,7 +35,7 @@ module IssueTemplates
       )
     end
 
-    render_on :view_issues_sidebar_planning_bottom, partial: 'issue_templates/issue_template_link'
+    render_on :view_issues_sidebar_queries_bottom, partial: 'issue_templates/issue_template_link'
 
     private
 
