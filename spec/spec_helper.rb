@@ -35,4 +35,12 @@ RSpec.configure do |config|
   config.after(:each) do
     DatabaseCleaner.clean
   end
+
+  config.before(:each, type: :request) do
+    ActionController::Base.allow_forgery_protection = false
+  end
+
+  config.after(:each, type: :request) do
+    ActionController::Base.allow_forgery_protection = true
+  end
 end

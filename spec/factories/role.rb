@@ -48,6 +48,42 @@ FactoryBot.define do
       view_changesets
     ] }
 
+    trait :no_issue_templates_permission do
+      name { 'No issue templates permission' }
+      issues_visibility { 'all' }
+      users_visibility { 'all' }
+      permissions { %i[] }
+    end
+
+    trait :issue_templates_viewer do
+      name { 'Issue templates viewer' }
+      issues_visibility { 'all' }
+      users_visibility { 'all' }
+      permissions { %i[
+        show_issue_templates
+      ] }
+    end
+
+    trait :issue_templates_editor do
+      issue_templates_viewer
+      name { 'Issue templates editor' }
+      issues_visibility { 'all' }
+      users_visibility { 'all' }
+      permissions { %i[
+        edit_issue_templates
+      ] }
+    end
+
+    trait :issue_templates_manager do
+      issue_templates_editor
+      name { 'Issue templates manager' }
+      issues_visibility { 'all' }
+      users_visibility { 'all' }
+      permissions { %i[
+        manage_issue_templates
+      ] }
+    end
+
     trait :manager_role do
       name { 'Manager' }
       issues_visibility { 'all' }

@@ -10,7 +10,7 @@ class GlobalIssueTemplatesController < ApplicationController
   menu_item :issues
   before_action :find_object, only: %i[show edit update destroy]
   before_action :find_project, only: %i[edit update]
-  before_action :require_admin, only: %i[index new show], excep: [:preview]
+  before_action :require_admin, only: %i[index new show orphaned_templates], excep: [:preview]
 
   #
   # Action for global template : Admin right is required.
