@@ -24,7 +24,11 @@ feature 'Templates can be reorder via drag and drop', js: true do
   scenario 'Can drag and drop on Issue Templates' do
     FactoryBot.create_list(:issue_template, 4, project_id: project.id, tracker_id: tracker.id)
 
-    visit_template_list(user)
+    log_user(user.login, user.password)
+    expect(page).to have_current_path(my_page_path, wait: 5)
+
+    visit project_issue_templates_path(project)
+    expect(page).to have_current_path(project_issue_templates_path(project), wait: 5)
 
     first_target = table.find('tr:nth-child(1) > td.buttons > span')
     last_target = table.find('tr:nth-child(4) > td.buttons > span')
