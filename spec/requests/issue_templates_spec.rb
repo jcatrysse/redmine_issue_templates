@@ -8,14 +8,14 @@ RSpec.configure do |c|
 end
 
 RSpec.describe 'Global Issue Template', type: :request do
-  let(:user) { FactoryBot.create(:user, :password_same_login, login: 'test-manager', language: 'en') }
+  let(:user) { FactoryBot.create(:user, login: 'test-manager', password: 'password', language: 'en') }
   let(:project) { FactoryBot.create(:project, trackers: [FactoryBot.create(:tracker, :with_default_status)], enabled_module_names: %w[issue_templates]) }
 
   before do
     FactoryBot.create(:member, roles: [role], principal: user, project: project)
 
     ActionController::Base.allow_forgery_protection = false
-    login_request(user.login, user.login)
+    login_request(user.login, 'password')
   end
 
   describe 'GET /projects/:project_id/issue_templates/orphaned_templates' do
