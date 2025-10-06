@@ -39,7 +39,9 @@ feature 'IssueTemplate', js: true do
 
     context 'When Administrator' do
       background do
-        log_user('admin', 'admin')
+        User.find_by(login: 'admin').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
+        log_user('admin', 'password')
         visit '/admin'
       end
 
@@ -54,8 +56,10 @@ feature 'IssueTemplate', js: true do
     given!(:enabled_module) { FactoryBot.create(:enabled_module) }
     context 'When user has no priv to use issue template' do
       background do
+        User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
         assign_template_priv(role, remove_permission: :show_issue_templates)
-        log_user('jsmith', 'jsmith')
+        log_user('jsmith', 'password')
         visit '/projects/ecookbook/issues'
       end
 
@@ -66,8 +70,10 @@ feature 'IssueTemplate', js: true do
 
     context 'When user has priv to use issue template' do
       background do
+        User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
         assign_template_priv(role, add_permission: :show_issue_templates)
-        log_user('jsmith', 'jsmith')
+        log_user('jsmith', 'password')
         visit '/projects/ecookbook/issues'
       end
 
@@ -86,8 +92,10 @@ feature 'IssueTemplate', js: true do
       given(:create_button) { page.find('#issue_template-form > input[type="submit"]') }
       given(:error_message) { page.find('#errorExplanation') }
       background do
+        User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
         assign_template_priv(role, add_permission: :edit_issue_templates)
-        log_user('jsmith', 'jsmith')
+        log_user('jsmith', 'password')
         visit '/projects/ecookbook/issue_templates/new'
 
         issue_template_title.set('')
@@ -104,10 +112,12 @@ feature 'IssueTemplate', js: true do
     # enable buildin-fields
     context 'Setting "enable_builtin_fields" is true' do
       background do
+        User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
         # enable_builtin_fields
         Setting.send 'plugin_redmine_issue_templates=', 'enable_builtin_fields' => 'true'
         assign_template_priv(role, add_permission: :edit_issue_templates)
-        log_user('jsmith', 'jsmith')
+        log_user('jsmith', 'password')
         visit '/projects/ecookbook/issue_templates/new'
       end
 
@@ -139,8 +149,10 @@ feature 'IssueTemplate', js: true do
     given!(:enabled_module) { FactoryBot.create(:enabled_module) }
 
     background do
+      User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
       assign_template_priv(role, add_permission: :show_issue_templates)
-      log_user('jsmith', 'jsmith')
+      log_user('jsmith', 'password')
       visit '/projects/ecookbook/issues/new'
     end
 
@@ -239,8 +251,10 @@ feature 'IssueTemplate', js: true do
     given(:template_dialog) { page.find('#issue_template_dialog', visible: false) }
 
     background do
+      User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
       assign_template_priv(role, add_permission: :show_issue_templates)
-      log_user('jsmith', 'jsmith')
+      log_user('jsmith', 'password')
       visit '/projects/ecookbook/issues/new'
     end
 
@@ -299,8 +313,10 @@ feature 'IssueTemplate', js: true do
     given!(:enabled_module) { FactoryBot.create(:enabled_module) }
 
     background do
+      User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
       assign_template_priv(role, add_permission: :show_issue_templates)
-      log_user('jsmith', 'jsmith')
+      log_user('jsmith', 'password')
       visit '/projects/ecookbook/issues/new'
 
       issue_subject.set('Test for revert subject')
@@ -338,11 +354,13 @@ feature 'IssueTemplate', js: true do
                                          project_id: 1, tracker_id: 1, builtin_fields_json: builtin_fields_json_value)
     end
     background do
+      User.find_by(login: 'jsmith').update(password: 'password') # Cannot user same text login and password by User#validate_password_complexity
+
       # enable_builtin_fields
       Setting.send 'plugin_redmine_issue_templates=', 'enable_builtin_fields' => 'true'
 
       assign_template_priv(role, add_permission: :show_issue_templates)
-      log_user('jsmith', 'jsmith')
+      log_user('jsmith', 'password')
       visit '/projects/ecookbook/issues/new'
 
       select expected_title, from: 'issue_template'

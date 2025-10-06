@@ -9,7 +9,7 @@ RSpec.configure do |c|
 end
 
 feature 'Create issue', js: true do
-  given(:user) { FactoryBot.create(:user, :password_same_login, login: 'test-manager', language: 'en', admin: false) }
+  given(:user) { FactoryBot.create(:user, login: 'test-manager', password: 'password', language: 'en', admin: false) }
   given(:project) { FactoryBot.create(:project_with_enabled_modules) }
   given(:tracker) { FactoryBot.create(:tracker, :with_default_status) }
   given(:role) { FactoryBot.create(:role, :manager_role) }
@@ -46,7 +46,7 @@ feature 'Create issue', js: true do
     context 'is_default: true' do
       let(:is_default) { true }
       scenario 'Select tracker and apply default template' do
-        log_user(user.login, user.login)
+        log_user(user.login, 'password')
         visit "/projects/#{project.identifier}/issues/new"
         select tracker.name, from: 'issue[tracker_id]'
         expect(find('#issue_subject').value).to eq('default issue title')
@@ -57,7 +57,7 @@ feature 'Create issue', js: true do
     context 'is_default: false' do
       let(:is_default) { false }
       scenario 'Select tracker and apply default template' do
-        log_user(user.login, user.login)
+        log_user(user.login, 'password')
         visit "/projects/#{project.identifier}/issues/new"
         select tracker.name, from: 'issue[tracker_id]'
         expect(find('#issue_subject').value).to eq('')

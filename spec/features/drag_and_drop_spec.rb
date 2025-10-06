@@ -6,7 +6,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../support/login_helper')
 
 feature 'Templates can be reorder via drag and drop', js: true do
   include LoginHelper
-  given(:user) { FactoryBot.create(:user, :password_same_login, login: 'manager', language: 'en', admin: false) }
+  given(:user) { FactoryBot.create(:user, login: 'manager', password: 'password', language: 'en', admin: false) }
   given(:project) { create(:project_with_enabled_modules) }
   given(:tracker) { FactoryBot.create(:tracker, :with_default_status) }
   given(:role) { FactoryBot.create(:role, :manager_role) }
