@@ -14,7 +14,6 @@ RSpec.describe 'Global Issue Template', type: :request do
   before do
     FactoryBot.create(:member, roles: [Role.find_by(name: 'Issue templates viewer') || FactoryBot.create(:role, :issue_templates_viewer)], principal: user, project: project)
 
-    ActionController::Base.allow_forgery_protection = false
     login_request(user.login, 'password')
   end
 

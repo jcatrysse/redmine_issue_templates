@@ -48,7 +48,7 @@ FactoryBot.define do
       view_changesets
     ] }
 
-    trait :no_issue_templates_permission do
+        trait :no_issue_templates_permission do
       name { 'No issue templates permission' }
       issues_visibility { 'all' }
       users_visibility { 'all' }
@@ -69,9 +69,9 @@ FactoryBot.define do
       name { 'Issue templates editor' }
       issues_visibility { 'all' }
       users_visibility { 'all' }
-      permissions { %i[
-        edit_issue_templates
-      ] }
+      after(:build) { |role|
+        role.permissions += %w[edit_issue_templates]
+      }
     end
 
     trait :issue_templates_manager do
@@ -79,9 +79,9 @@ FactoryBot.define do
       name { 'Issue templates manager' }
       issues_visibility { 'all' }
       users_visibility { 'all' }
-      permissions { %i[
-        manage_issue_templates
-      ] }
+      after(:build) { |role|
+        role.permissions += %w[manage_issue_templates]
+      }
     end
 
     trait :manager_role do
