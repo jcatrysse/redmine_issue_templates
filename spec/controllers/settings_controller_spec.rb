@@ -6,7 +6,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../support/controller_helper
 describe SettingsController, type: :controller do
   include_context 'As admin'
   before do
-    Redmine::SudoMode.disable!
+    # Same as Redmine core's test_helper: SudoMode.disable! does not survive the request on
+    # Redmine 7 (CurrentAttributes are reset per request) and sudo mode is on by default there.
+    allow(Redmine::SudoMode).to receive(:enabled?).and_return(false)
     Redmine::Plugin.register(:redmine_issue_templates) do
       settings partial: 'settings/redmine_issue_templates',
                default: { 'apply_global_template_to_all_projects' => 'false' }
