@@ -78,8 +78,12 @@ IssueTemplateSetting.find_or_create(sub.id).update!(inherit_templates: true)
 puts "Plugin seed: #{IssueTemplate.count} issue templates, #{NoteTemplate.count} note templates, " \
      "#{GlobalIssueTemplate.count} global issue templates, #{GlobalNoteTemplate.count} global note templates"
 
+# the REST API scenario
+Setting.rest_api_enabled = '1'
+
 # ids for the scenarios (they cannot query the database)
 ids = {
+  api_keys: %w[admin manager reporter outsider].to_h { |login| [login, User.find_by!(login: login).api_key] },
   issue_templates: IssueTemplate.pluck(:title, :id).to_h,
   note_templates: NoteTemplate.pluck(:name, :id).to_h,
   global_issue_templates: GlobalIssueTemplate.pluck(:title, :id).to_h,
