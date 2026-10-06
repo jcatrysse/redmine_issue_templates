@@ -1,15 +1,15 @@
 # project-issue-templates
 
-Run 2026-10-06T19:46:31.771Z against http://127.0.0.1:3000.
+Run 2026-10-06T20:07:33.581Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
 | ![](project-issue-templates-list.png) | manager | `/projects/e2e-project/issue_templates` | The project's templates per tracker, with the global templates for this project below |
 | ![](project-issue-templates-sidebar.png) | manager | `/projects/e2e-project/issues` | The issue list sidebar links to the issue and note templates |
 | ![](project-issue-templates-create-invalid.png) | manager | `/projects/e2e-project/issue_templates` | Creating a template without a name is refused with a validation message |
-| ![](project-issue-templates-created.png) | manager | `/projects/e2e-project/issue_templates/7` | The new template is saved and shown |
-| ![](project-issue-templates-updated.png) | manager | `/projects/e2e-project/issue_templates/7` | Editing saves the new description; the template is now disabled |
-| ![](project-issue-templates-copy.png) | manager | `/projects/e2e-project/issue_templates/new?copy_from=7` | Copy opens a new template form filled from the template, named copy_of_... |
+| ![](project-issue-templates-created.png) | manager | `/projects/e2e-project/issue_templates/6` | The new template is saved and shown |
+| ![](project-issue-templates-updated.png) | manager | `/projects/e2e-project/issue_templates/6` | Editing saves the new description; the template is now disabled |
+| ![](project-issue-templates-copy.png) | manager | `/projects/e2e-project/issue_templates/new?copy_from=6` | Copy opens a new template form filled from the template, named copy_of_... |
 | ![](project-issue-templates-deleted.png) | manager | `/projects/e2e-project/issue_templates` | A disabled template is deleted after confirmation |
 | ![](project-issue-templates-delete-enabled-disabled.png) | manager | `/projects/e2e-project/issue_templates/2` | For an enabled template the Delete link is disabled (its tooltip says only disabled templates can be deleted) |
 | ![](project-issue-templates-delete-enabled-refused.png) | manager | `/projects/e2e-project/issue_templates/2` | Sending the delete anyway is refused: the enabled template stays, the error says to disable it first |

@@ -1,13 +1,13 @@
 # note-templates
 
-Run 2026-10-06T19:48:43.927Z against http://127.0.0.1:3000.
+Run 2026-10-06T20:07:16.575Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
 | ![](note-templates-list.png) | manager | `/projects/e2e-project/note_templates` | The project's note templates per tracker, with the global note templates below |
 | ![](note-templates-new-roles.png) | manager | `/projects/e2e-project/note_templates/new` | A new note template visible to selected roles |
-| ![](note-templates-created.png) | manager | `/projects/e2e-project/note_templates/6` | The note template is saved with its roles |
-| ![](note-templates-updated.png) | manager | `/projects/e2e-project/note_templates/6` | Editing saves the description; the template is disabled |
+| ![](note-templates-created.png) | manager | `/projects/e2e-project/note_templates/5` | The note template is saved with its roles |
+| ![](note-templates-updated.png) | manager | `/projects/e2e-project/note_templates/5` | Editing saves the description; the template is disabled |
 | ![](note-templates-deleted.png) | manager | `/projects/e2e-project/note_templates` | The disabled note template is deleted |
 | ![](note-templates-popup.png) | manager | `/issues/1#template_issue_notes_dialog` | On the issue: the popup offers the open, role and global note templates, not another user's private one |
 | ![](note-templates-applied.png) | manager | `/issues/1#template_issue_notes_dialog` | Apply puts the note template text into the notes |
