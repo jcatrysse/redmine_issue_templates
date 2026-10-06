@@ -24,7 +24,8 @@ class IssuesControllerTest < Redmine::ControllerTest
            :time_entries,
            :journals,
            :journal_details,
-           :issue_templates
+           :issue_templates,
+           :note_templates
 
   def setup
     User.current = nil
@@ -81,5 +82,20 @@ class IssuesControllerTest < Redmine::ControllerTest
     get :new
     assert_response :success
     assert_select 'div#template_area select#issue_template', true
+  end
+
+  def test_show_offers_note_templates_with_show_permission
+    get :show, params: { id: 1 }
+    assert_response :success
+    assert_select 'div#template_issue_notes'
+  end
+
+  # The note template list needs show_issue_templates; without it there is no link that ends in a 403.
+  def test_show_offers_no_note_templates_without_show_permission
+    Role.find(1).remove_permission! :show_issue_templates
+    get :show, params: { id: 1 }
+    assert_response :success
+    assert_select 'div#template_issue_notes', 0
+    assert_select 'div[id^=template_journal_]', 0
   end
 end

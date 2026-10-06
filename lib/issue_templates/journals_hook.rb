@@ -7,6 +7,8 @@ module IssueTemplates
     def view_journals_notes_form_after_notes(context = {})
       journal = context[:journal]
       issue = journal.issue
+      return unless show_issue_templates?(issue)
+
       tracker_id = issue.try(:tracker_id)
       templates = target_templates(context, tracker_id)
       global_templates = global_note_templates(context, tracker_id)
@@ -21,6 +23,8 @@ module IssueTemplates
     # Add journal with edit issue
     def view_issues_edit_notes_bottom(context = {})
       issue = context[:issue]
+      return unless show_issue_templates?(issue)
+
       tracker_id = issue.try(:tracker_id)
       templates = target_templates(context, tracker_id)
       global_templates = global_note_templates(context, tracker_id)
@@ -30,6 +34,11 @@ module IssueTemplates
         :render_to_string,
         partial: 'issue_templates/note_form', locals: { type: 'template_issue_notes', templates: templates, issue: issue }
       )
+    end
+
+    # the template list behind the link needs this permission
+    def show_issue_templates?(issue)
+      User.current.allowed_to?(:show_issue_templates, issue&.project)
     end
 
     def target_templates(context, tracker_id)
