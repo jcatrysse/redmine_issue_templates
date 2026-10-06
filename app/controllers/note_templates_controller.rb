@@ -72,7 +72,8 @@ class NoteTemplatesController < ApplicationController
     else
       note_template = NoteTemplate.find(note_template_id)
       # prevent to load if the template visibility does not match.
-      raise ActiveRecord::RecordNotFound unless note_template.loadable?(user_id: User.current.id)
+      raise ActiveRecord::RecordNotFound unless User.current.allowed_to?(:show_issue_templates, note_template.project) &&
+                                                note_template.loadable?(user_id: User.current.id)
     end
 
     render plain: note_template.template_json

@@ -261,6 +261,57 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     assert_select 'input[name=?][value=?]', 'issue_template[title]', 'copy_of_title1'
   end
 
+  def test_load_refuses_a_template_of_a_project_without_permission
+    # Template 6 belongs to project 3, where jsmith has no template permission.
+    post :load, params: { project_id: 1, template_id: 6 }
+    assert_response 403
+  end
+
+  def test_load_returns_a_template_shared_with_a_subproject
+    # jsmith may use templates in subproject 3 only; template 1 of project 1 is shared with subprojects.
+    Role.find(1).remove_permission! :show_issue_templates
+    Role.non_member.add_permission! :show_issue_templates
+    Project.find(3).enabled_modules.create!(name: 'issue_templates')
+
+    post :load, params: { project_id: 3, template_id: 1 }
+    assert_response :success
+    assert_equal 'description1', json_response['issue_template']['description']
+
+    # template 2 of project 1 is not shared
+    post :load, params: { project_id: 3, template_id: 2 }
+    assert_response 403
+  end
+
+  def test_load_selectable_fields_requires_edit_permission_in_the_project
+    get :load_selectable_fields, params: { project_id: 1, tracker_id: 1 }
+    assert_response 403
+
+    edit_permission
+    get :load_selectable_fields, params: { project_id: 1, tracker_id: 1 }
+    assert_response :success
+  end
+
+  def test_load_selectable_fields_without_project_requires_admin
+    get :load_selectable_fields, params: { tracker_id: 1 }
+    assert_response 403
+
+    @request.session[:user_id] = 1
+    get :load_selectable_fields, params: { tracker_id: 1 }
+    assert_response :success
+  end
+
+  def test_pulldown_and_list_refuse_an_issue_project_without_permission
+    # jsmith is a Developer in private project 2, without template permission there
+    post :set_pulldown, params: { project_id: 1, issue_tracker_id: 1, issue_project_id: 2 }
+    assert_response 403
+
+    get :list_templates, params: { project_id: 1, issue_tracker_id: 1, issue_project_id: 2 }
+    assert_response 403
+
+    post :set_pulldown, params: { project_id: 1, issue_tracker_id: 1, issue_project_id: 1 }
+    assert_response :success
+  end
+
   def json_response
     ActiveSupport::JSON.decode @response.body
   end

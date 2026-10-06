@@ -8,6 +8,7 @@ class IssueTemplatesController < ApplicationController
   include ProjectTemplatesCommon
   menu_item :issues
   before_action :find_tracker, :find_templates, only: %i[set_pulldown list_templates]
+  before_action :authorize_load_selectable_fields, only: %i[load_selectable_fields]
 
   def index
     project_id = @project.id
@@ -88,6 +89,8 @@ class IssueTemplatesController < ApplicationController
                      else
                        IssueTemplate.find(issue_template_id)
                      end
+    raise ::Unauthorized unless loadable?(issue_template)
+
     rendered_json = builtin_fields_enabled? ? issue_template.template_json : issue_template.template_json(except: 'builtin_fields_json')
 
     render plain: rendered_json
@@ -207,6 +210,7 @@ class IssueTemplatesController < ApplicationController
   def issue_templates
     if params[:issue_project_id]
       @project = Project.find(params[:issue_project_id])
+      raise ::Unauthorized unless User.current.allowed_to?(:show_issue_templates, @project)
     end
     IssueTemplate.get_templates_for_project_tracker(@project.id, @tracker.id)
   end
@@ -233,6 +237,28 @@ class IssueTemplatesController < ApplicationController
     { layout: !request.xhr?,
       locals: { issue_template: template, project: @project, child_project_used_count: child_project_used_count,
                 custom_fields: custom_fields.to_s, builtin_fields_enable: builtin_fields_enabled? } }
+  end
+
+  # A project template can be loaded where the user may use templates: in its own project,
+  # or in a subproject when the template is shared with subprojects (inherited templates).
+  def loadable?(issue_template)
+    return true if issue_template.is_a?(GlobalIssueTemplate)
+
+    project = issue_template.project
+    return true if User.current.allowed_to?(:show_issue_templates, project)
+
+    issue_template.enabled_sharing? &&
+      project.descendants.where(Project.allowed_to_condition(User.current, :show_issue_templates)).exists?
+  end
+
+  # The fields include the project's assignable users, watchers and categories: the project
+  # template form needs the edit permission there, the global template form is for administrators.
+  def authorize_load_selectable_fields
+    project = Project.find(params[:project_id]) if params[:project_id].present?
+    allowed = project ? User.current.allowed_to?(:edit_issue_templates, project) : User.current.admin?
+    deny_access unless allowed
+  rescue ActiveRecord::RecordNotFound
+    render_404
   end
 
   def loadable_trigger?

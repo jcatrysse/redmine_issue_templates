@@ -129,4 +129,23 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
     assert_response :not_found
     assert NoteTemplate.exists?(template.id)
   end
+
+  def test_load_refuses_a_template_of_a_project_without_permission
+    # Project 2 is private; jsmith's role there (Developer) has no template permission.
+    template = NoteTemplate.create!(project_id: 2, tracker_id: 1, author_id: 1, name: 'Private note template',
+                                    description: 'Secret', visibility: 'open', enabled: true)
+
+    post :load, params: { note_template: { note_template_id: template.id } }
+    assert_response :not_found
+  end
+
+  def test_load_returns_an_open_template_of_a_project_with_permission
+    post :load, params: { note_template: { note_template_id: 4 } }
+    assert_response :success
+    assert_equal 'note template 4', JSON.parse(response.body)['note_template']['name']
+
+    Role.find(1).remove_permission! :show_issue_templates
+    post :load, params: { note_template: { note_template_id: 4 } }
+    assert_response :not_found
+  end
 end
