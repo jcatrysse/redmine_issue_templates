@@ -1,6 +1,6 @@
 # global-templates
 
-Run 2026-10-06T20:06:48.624Z against http://127.0.0.1:3000.
+Run 2026-10-06T21:15:23.328Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
@@ -19,4 +19,4 @@ Run 2026-10-06T20:06:48.624Z against http://127.0.0.1:3000.
 | ![](global-templates-manager-create-refused.png) | manager | `/global_issue_templates` | Creating a global template as a non-administrator is refused (403); this used to succeed |
 | ![](global-templates-manager-update-refused.png) | manager | `/global_note_templates/1` | Changing a global note template as a non-administrator is refused (403); this used to succeed |
 | ![](global-templates-reporter-refused.png) | reporter | `/global_issue_templates/new` | A reporter is refused too |
-| ![](global-templates-unchanged.png) | admin | `/global_note_templates/1` | Afterwards the global templates the manager tried to delete or change are unchanged |
+| ![](global-templates-unchanged.png) | admin | `/global_note_templates/1` | Afterwards no global template was created by the manager, and the ones it tried to delete or change are unchanged |
