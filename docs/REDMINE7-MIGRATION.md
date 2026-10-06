@@ -18,12 +18,13 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Plugin id | `redmine_issue_templates` |
 | GEOxyz runs today | `master-geoxyz` |
 | Upstream | agileware-jp/redmine_issue_templates master @ 87360e7db5f274b3572234c3e1806aeb2772f409 (2026-09-24) |
-| Runs on Redmine 7 as is | JA |
+| Runs on Redmine 7 as is | JA (runtime); tests needed two fixes |
 | Upstream sync | SYNC AANBEVOLEN: upstream master 87360e7 merged into master-geoxyz (on redmine70-migration): legacy-icons-compat.css only on plugin screens, REST index via api format, CI; no conflicts, GEOxyz's 3 commits intact |
 | After sync | JA |
 | Complexity (1 trivial .. 5 rewrite) | 1 |
 | Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz + latest 7.0-stable), Rails 8.1.3.1, Ruby 3.3.6, PostgreSQL 16 and MariaDB 10.11 |
 | Branch head when this file was written | `30ff6e7` |
+| Migration session (2026-10-06) | DONE, see "Result of the migration session" below. Tests green on PostgreSQL and MariaDB (Redmine 7.0-stable-GEOxyz) and on 5.1-stable; e2e 105 screenshots, 0 problems on both databases; OpenAI review 3 rounds |
 
 ## Already on this branch
 
@@ -36,31 +37,35 @@ In this order: things that break, security, the GEOxyz changes, the open items, 
 
 **Open items from the analysis** (Dutch; where they conflict with a decision or a priority item above, those win)
 
-1. settings_controller_spec.rb:28,33 fail on R7: Redmine::SudoMode.disable! in before() is reset per request (CurrentAttributes) and sudo is on by default; adapt the spec
-2. Run the selenium feature specs once with a chromedriver matching the Chrome version (not verified here)
-3. Plugin Gemfile swaps core's commonmarker pin to ~> 2.6 when RubyGems >= 4 (upstream a5ea172) - be aware if production uses RubyGems 4
+1. DONE 50ebdcb. settings_controller_spec.rb:28,33 fail on R7: Redmine::SudoMode.disable! in before() is reset per request (CurrentAttributes) and sudo is on by default; the spec now stubs `SudoMode.enabled?` like core's test_helper (also fine on 5.1).
+2. DONE. The 43 selenium feature specs run with Chrome for Testing 155 + chromedriver 155 (root needs `--no-sandbox`; a wrapper through `SE_BROWSER_PATH`, and the mismatched chromedriver 147 off PATH): all pass. One of them is intermittent, see "Open items".
+3. NOTED. Plugin Gemfile swaps core's commonmarker pin to ~> 2.6 only when RubyGems >= 4 (upstream a5ea172). Here RubyGems 3.5.22, inactive. Listed under "After the upgrade".
 
 **Checks**
 
-4. Run the plugin's whole test suite on Redmine 7.0-stable-GEOxyz with PostgreSQL AND MariaDB, and once on 5.1-stable if the branch is meant to stay 5.1-compatible.
-5. Check Redmine 7 webhooks against this plugin (see "Rules"), and note the result here even if nothing is needed.
-6. Verify every feature of the plugin by hand on a running Redmine 7 (screenshots).
+4. DONE. See "Test results".
+5. DONE, nothing needed. The plugin does not patch Issue, issues/show.api.rsb or any issue data: templates only prefill the issue form in the browser, the saved issue is plain core data, so core webhook payloads are complete and consistent.
+6. DONE. See "Inventory of functions" and docs/e2e.
 
 ## GEOxyz changes to review or re-apply
 
 These GEOxyz commits are on the branch GEOxyz runs today and therefore on this branch. Review each one against the code it now sits on (upstream merges and Redmine 7 core): drop it if upstream or core now does the same, rewrite it if it is not up to the quality rules below (tests, I18n, security, portability), keep it otherwise. Record the verdict per commit in this file.
 
-| commit | date | subject |
-|---|---|---|
-| `751e719` | 2026-01-16 | Rename Gemfile.local to Gemfile (needed for correct handling of gem dependencies) |
-| `82f6b59` | 2025-11-24 | Rename Gemfile.local to Gemfile (needed for correct handling of gem dependencies) |
-| `fe92817` | 2025-11-24 | DB migration optimization |
+| commit | date | subject | verdict |
+|---|---|---|---|
+| `751e719` | 2026-01-16 | Rename Gemfile.local to Gemfile (needed for correct handling of gem dependencies) | KEEP, partly rewritten. Its `ActiveRecord::Base.open` stub broke the whole rspec run on Rails 8.1 and was removed in c496176. The remaining `autoload_paths.dup` lines in `spec/rails_helper.rb` are not needed on Redmine 7 (feature specs pass without them, tried) but are guarded and harmless; kept for 5.1/6.1. |
+| `82f6b59` | 2025-11-24 | Rename Gemfile.local to Gemfile (needed for correct handling of gem dependencies) | KEEP, fixed. Redmine only loads `plugins/*/{Gemfile,PluginGemfile}`, so the rename is needed for the test gems. But the inherited `dependencies.reject! nokogiri` then ran in every environment and dropped Redmine's own nokogiri pin from the production bundle: removed in 678b0f2, with `test/unit/plugin_gemfile_test.rb` (every top-level gem of core's Gemfile stays in the bundle; failed on nokogiri before). |
+| `fe92817` | 2025-11-24 | DB migration optimization | KEEP. Upstream lacks the guard; it lets `redmine:plugins:migrate` pass on a database where the table was already renamed. Test added in 88ff916 (both directions, with and without the existing table; 2 of 4 fail on the unguarded migration). Down/up run on PostgreSQL and MariaDB. |
 
 ## After the upgrade (production)
 
 Actions the person doing the upgrade must take, or know about, for this plugin:
 
-- None known. Add here what the session finds.
+- No data migration and no new setting. `rake redmine:plugins:migrate` has nothing new for this plugin (no new migration on this branch).
+- Run `bundle install` after updating the plugin: its Gemfile no longer removes Redmine's nokogiri pin, so the bundle follows core's `nokogiri ~> 1.19.1` again. Keep `bundle config set without 'development test'` in production: the plugin Gemfile declares rspec, factory_bot, pry and others in those groups.
+- If production ever runs RubyGems >= 4, the plugin Gemfile replaces core's commonmarker pin with `~> 2.6` (upstream a5ea172).
+- Behaviour users may notice (all are authorization fixes, see "Result"): non-administrators can no longer create, change or delete global templates; templates of another project are no longer reachable by id; members without "Show issue templates" no longer get the note template link on issues; template loading is limited to what the form offers in that project.
+- REST: `GET /projects/<id>/note_templates.json` now works (it answered 500) and returns the template's name under `name`; `issue_templates.json` works again for projects with inherited templates.
 
 ## How to test
 
@@ -193,6 +198,107 @@ results quoted in the analysis come from it.
 - No new failure when run together with the other GEOxyz plugins.
 - "After the upgrade" lists every action production needs; "Status" is current.
 
+
+## Result of the migration session (2026-10-06)
+
+### Commits (in order)
+
+| commit | what |
+|---|---|
+| 50ebdcb | spec: sudo mode off the way core's tests do (work list 1) |
+| 678b0f2 | Gemfile: keep Redmine's nokogiri pin (GEOxyz 82f6b59 review) |
+| 88ff916 | test for the guarded rename migration (GEOxyz fe92817 review) |
+| 8dacdd6 | security: admin required for every write on global issue/note templates (create/update/destroy were open to any user) |
+| 21c76a5 | security: project templates only through their own project (show/update/destroy/copy of any project's template by id) |
+| e60784b | security: permission checks on issue_templates#load, load_selectable_fields, set_pulldown/list_templates (issue_project_id) and note_templates#load |
+| 0d9ed53 | note template link on issues only with show_issue_templates (it opened an empty popup with a 403) |
+| 376dbf6 | REST: issue_templates.json with inherited templates and note_templates.json answered 500 |
+| cb732a1 | security: global templates loadable only where they are offered (found in own review) |
+| 7cd3445 | security: template loading tied to the project of the issue form (OpenAI review) |
+| f77fa86 | issue form script: template URLs unescaped (`&amp;project_id` lost the project; found by the e2e run) |
+| 7a9aae6, 1cfe0cb, 039858b, bfe4e80, 5f7d515, 81b8c76, 4153a01 | e2e seed, scenarios and evidence |
+| cd0edea, 38f4d62 | OpenAI review resolutions |
+
+All authorization holes were pre-existing (upstream agileware and master-geoxyz on 5.1 alike, proven in docs/e2e/before); each fix has a test that failed before. No new gem, setting, locale string or schema change. Every fix also runs on Redmine 5.1.
+
+### Baseline (before any change, 7.0-stable-GEOxyz, PostgreSQL)
+
+- minitest 77 runs, 298 assertions, 0 failures; rspec 149 examples, 45 failures (43 feature specs: chromedriver/Chrome mismatch and root sandbox; 2 settings specs: sudo mode). With a matching Chrome: 149 examples, 2 failures (the sudo specs).
+- Real Redmine (production mode): smoke 30 screenshots / 0 problems, core flows 6 / 0.
+
+### Test results (final head f77fa86 for the code)
+
+| Redmine | DB | minitest | rspec (incl. 43 selenium feature specs) |
+|---|---|---|---|
+| 7.0-stable-GEOxyz (7.0.1, Rails 8.1.3.1, Ruby 3.3.6) | PostgreSQL 16 | 102 runs, 377 assertions, 0 failures, 0 errors | 149 examples, 0 failures, 2 pending (pending upstream) |
+| 7.0-stable-GEOxyz | MariaDB 10.11 | 102 runs, 377 assertions, 0 failures, 0 errors | 149 examples, 0 failures, 2 pending |
+| 5.1-stable (Ruby 3.2.6) | PostgreSQL 16 | 102 runs, 335 assertions, 0 failures, 0 errors | 149 examples, 0 failures, 2 pending |
+
+- Boot and eager load: the production server (eager load on) starts on both databases.
+- Migrations: `redmine:plugins:migrate NAME=redmine_issue_templates VERSION=0` (31 reverted, no plugin table left) and back up (31 migrated, 7 tables) on PostgreSQL and on MariaDB.
+- Rake tasks on the running instance: `apply_inhelit_template_to_child_projects[1]` / `unapply_...[1]` switch inherit_templates of e2e-sub true/false; with an unknown project id the task prints "IssueTemplateSetting to project specified by 999 does not exist."
+
+### End to end (real Redmine 7, production mode, `start_server.sh --reset`)
+
+| run | smoke | core | plugin scenarios | problems |
+|---|---|---|---|---|
+| PostgreSQL (screenshots committed in docs/e2e) | 30 | 6 | 69 (6 scenarios) | 0 |
+| MariaDB (tables in docs/e2e/mariadb) | 30 | 6 | 69 | 0 |
+| before: master-geoxyz on Redmine 5.1 (docs/e2e/before) | - | - | 56 (5 scenarios) | 21 failed checks = the holes fixed here, see docs/e2e/before/README.md |
+
+Every screenshot was looked at. Findings from looking: Textile seed text on a CommonMark instance (seed fixed), popups caught mid fade-in (waits added), the reporter's empty note popup (fixed, 0d9ed53), the REST 500s (fixed, 376dbf6), the lost project_id after a tracker switch (fixed, f77fa86).
+
+### Inventory of functions
+
+| function | how a user reaches it | scenario | screenshots (docs/e2e) |
+|---|---|---|---|
+| Template pulldown on the new issue form, default template, apply, revert, erase | Issues > New issue | new_issue_template.mjs | new-issue-template-default-applied, -second-applied, -reverted |
+| Filter dialog (list and filter templates of the tracker) | "Preview Template Contents" next to the pulldown | new_issue_template.mjs | new-issue-template-filter-dialog |
+| Help message of the project | "About templates" next to the pulldown | new_issue_template.mjs, settings.mjs | new-issue-template-help-message |
+| Templates per tracker, tracker switch, save the issue | tracker select on the form | new_issue_template.mjs | -feature-tracker, -issue-created |
+| Global templates in the pulldown | pulldown, class "global" | new_issue_template.mjs, global_templates.mjs | global-templates-issue-in-project |
+| Refusals on the form: no pulldown without permission, load/set_pulldown of a private project's template, non-member | as reporter / outsider | new_issue_template.mjs | -reporter-no-pulldown, -reporter-load-refused, -outsider-refused |
+| Project issue templates: list, create (validation), show/edit, copy, delete (disabled only), orphaned list | Project > Issue templates | project_issue_templates.mjs | project-issue-templates-list, -create-invalid, -created, -updated, -copy, -deleted, -delete-enabled-disabled, -delete-enabled-refused, -orphaned |
+| Sidebar links on the issue list | Issues sidebar | project_issue_templates.mjs | -sidebar, -reporter-sidebar |
+| Refusals: reporter, outsider, cross-project id and copy_from | direct URLs | project_issue_templates.mjs | -reporter-refused, -outsider-refused, -cross-project-404 |
+| Drag & drop reorder | sort handle in the lists | rspec spec/features/drag_and_drop_spec.rb (4 examples) | (rspec) |
+| Note templates in a project: list, create with role visibility, edit, delete | Project > Issue templates > Template for note | note_templates.mjs | note-templates-list, -new-roles, -created, -updated, -deleted |
+| Note templates on an issue: popup (open/roles/mine/global), apply, save | Issue > Edit > "Template for note" | note_templates.mjs | -popup, -applied, -saved, -popup-author |
+| Refusals for note templates (no link, load 404, private open note, cross-project) | as reporter / outsider | note_templates.mjs | -reporter-no-link, -reporter-load-refused, -reporter-list-refused, -outsider-load-refused, -cross-project-404 |
+| Global issue templates (admin): list, create with project assignment, edit, delete | Administration > Global Issue Templates | global_templates.mjs | global-templates-admin-menu, -issue-list, -issue-create-invalid, -issue-new, -issue-created, -issue-updated, -issue-deleted |
+| Global note templates (admin) | Global Issue Templates > Global Template for note | global_templates.mjs | -note-list, -note-created, -note-delete-enabled |
+| Refusals for global templates (pages and writes as manager/reporter) | direct URLs / forged form posts | global_templates.mjs | -manager-refused, -manager-create-refused, -manager-update-refused, -reporter-refused, -unchanged |
+| Plugin settings (all projects, templates on edit, built-in fields), behind sudo mode | Administration > Plugins > Configure | settings.mjs | settings-plugin-settings, -plugin-settings-saved |
+| Built-in field generator (load_selectable_fields) and applying built-in fields | template form with built-in fields on | settings.mjs | -builtin-generator, -builtin-applied, -reporter-fields-refused |
+| Template pulldown on the issue edit form | setting "Use templates when edit issue" | settings.mjs | -edit-form-pulldown |
+| Project template settings: inherit, replace (with confirmation), help message | Project > Issue templates > Settings | settings.mjs | -project-settings, -project-settings-saved, -replace-confirm, -replaced, -reporter-settings-refused |
+| Inherited templates in a subproject | subproject new issue / template list | settings.mjs | -inherited, -inherited-list |
+| REST API: issue_templates.json, note_templates.json, list_templates.json, load.json; 403/401 refusals | API key | rest_api.mjs | rest-api-allowed, rest-api-refused |
+| Rake tasks apply/unapply inherit to child projects | command line | run by hand, see "Test results" | - |
+| Every plugin page as admin | routes | .codex/e2e/smoke.mjs | smoke-01..30 |
+
+No mail, cron, macro or webhook in this plugin.
+
+### Together with other GEOxyz plugins
+
+Redmine 7.0-stable-GEOxyz on PostgreSQL with redmine_issue_field_visibility, redmine_depending_custom_fields, redmine_view_issue_description and redmine_custom_workflows (all `redmine70-migration`, 2026-10-06): this plugin's scenarios for global templates, the new issue form, project templates, REST API and settings passed (0 problems). Finding for **redmine_view_issue_description**: its permission makes `issues#show` answer 403 to members whose role lacks it (core Reporter role, Redmine's test fixtures), so the generic core flow (reporter on /issues/1), this plugin's note template scenario at the reporter step, 2 minitests and 9 update_issue feature specs that open an issue as such a user fail in that combination. That is the other plugin's intended behaviour, not a fault here; worth a look in that plugin's migration (its interplay with roles that only have view_issues).
+
+### Review
+
+- Own adversarial review of the whole diff: found the open global template load (fixed cb732a1) and, through the e2e run, the escaped URL (f77fa86).
+- OpenAI review (gpt-5) on 6522c8b..HEAD, 3 rounds, docs/reviews/openai-2026-10-06-*.md: round 1 one finding fixed (7cd3445), one declined (premise wrong, Redmine's Project.find resolves identifiers; it did expose a weaker lookup of mine, replaced); round 2 one declined (Gemfile test, both core Gemfiles checked); round 3 two declined (both premises checked in code and on the running server). Every finding has a Resolution line.
+
+### Open items (not done, with reason)
+
+- `spec/features/drag_and_drop_spec.rb:24` (issue templates) is intermittent in this container: in failing runs no mousedown reaches the page at all (a capture listener on document saw nothing, while elementFromPoint is the sort handle; in passing runs mousedown, sortstart and sortupdate fire). Fails on the code before any change of this branch too, on 7.0 and 5.1; the final runs on PostgreSQL, MariaDB and 5.1 passed. Test left unchanged; looks like chromedriver input timing, not the plugin.
+- Not changed, noted: `_list_templates.api.rsb` returns the tracker id under `tracker_name` for the first group; a new note/issue template form shows "Orphaned template from tracker" next to an empty tracker select until one is chosen; `apply_global_template_to_all_projects` only tested as a setting plus the load rule (templates hide global ones when the project has its own, upstream behaviour).
+- Kit issues met: `.codex/test_setup.sh` runs `$SUDO -u postgres` with an empty `$SUDO` as root (role created by hand, then `RMP_PROVISION_DB=0`); rsync was missing; a server from another `REDMINE_DIR` on port 3000 makes `start_server.sh` report success while the old server keeps answering.
+
+### Open questions for Jan
+
+1. **Behaviour changes from the security fixes.** All of them remove access that was never meant to exist (non-admin writes on global templates, other projects' templates by id, template text for users without the permission). Options: (a) keep as built (recommended); (b) also offer them upstream to agileware-jp as a PR, since every Redmine installation with this plugin has the same holes (recommended, Jan's call because it publishes the findings).
+2. **REST note_templates.json** now returns `name` instead of `title` (the endpoint always answered 500 before, so no client can depend on it). Options: keep `name` (recommended, it is the model's field) or emit both.
+3. **Raster icons.** Kept upstream's approach (legacy-icons-compat.css on the plugin's screens) instead of converting every view to `sprite_icon`, which would drop Redmine 5.1 support and is a large view rewrite. Recommended: keep until GEOxyz leaves 5.1, then convert.
 
 ## Analysis report (2026-10-06, Dutch)
 
