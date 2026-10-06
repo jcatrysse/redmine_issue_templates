@@ -9,7 +9,7 @@ class GlobalNoteTemplatesController < ApplicationController
 
   before_action :find_object, only: %i[show update destroy]
   before_action :find_project, only: %i[update]
-  before_action :require_admin, only: %i[index new show], excep: [:preview]
+  before_action :require_admin, except: %i[preview]
 
   #
   # Action for global template : Admin right is required.

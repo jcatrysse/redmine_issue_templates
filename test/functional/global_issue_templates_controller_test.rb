@@ -114,4 +114,23 @@ class GlobalIssueTemplatesControllerTest < Redmine::ControllerTest
     get :preview, params: { global_issue_template: { description: 'h1. Global Test data.' } }
     assert_select 'h1', /Global Test data\./, @response.body.to_s
   end
+
+  def test_non_admin_cannot_create_update_or_destroy_templates
+    @request.session[:user_id] = 2 # jsmith, not an administrator
+    GlobalIssueTemplate.find(2).update_column(:description, 'Global template two')
+
+    assert_no_difference 'GlobalIssueTemplate.count' do
+      post :create, params: { global_issue_template: { title: 'Created by jsmith', description: 'Created by jsmith',
+                                                       tracker_id: 1, enabled: 1 } }
+    end
+    assert_response 403
+
+    put :update, params: { id: 2, global_issue_template: { description: 'Changed by jsmith' } }
+    assert_response 403
+    assert_equal 'Global template two', GlobalIssueTemplate.find(2).description
+
+    delete :destroy, params: { id: 2 }
+    assert_response 403
+    assert GlobalIssueTemplate.exists?(2)
+  end
 end
