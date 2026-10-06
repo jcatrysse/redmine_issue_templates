@@ -121,8 +121,9 @@ await t.shot('reporter-refused', 'A reporter is refused too');
 await t.login('admin');
 await t.go('/global_issue_templates');
 if (!(await t.page.locator('#content', { hasText: 'E2E global template' }).count())) fail('E2E global template was deleted by the manager');
+if (await t.page.locator('#content', { hasText: 'Created by manager' }).count()) fail('the manager created a global template');
 await t.go(`/global_note_templates/${ids.global_note_templates['E2E global note']}`);
 if (await t.page.locator('#content', { hasText: 'Changed by manager' }).count()) fail('global note changed by the manager');
-await t.shot('unchanged', 'Afterwards the global templates the manager tried to delete or change are unchanged');
+await t.shot('unchanged', 'Afterwards no global template was created by the manager, and the ones it tried to delete or change are unchanged');
 
 await t.done();
