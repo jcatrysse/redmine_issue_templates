@@ -3,12 +3,12 @@ api.array :note_templates do
     api.template do
       api.id template.id
       api.tracker_id template.tracker_id
-      api.tracker_name template.tracker.name
-      api.title template.title
+      api.tracker_name template.tracker.try(:name)
+      api.name template.name
       api.description template.description
       api.enabled template.enabled
-      api.created_on template.created_on
-      api.updated_on template.updated_on
+      api.created_on template.created_at
+      api.updated_on template.updated_at
     end
   end
 end

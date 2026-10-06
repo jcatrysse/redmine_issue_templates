@@ -312,6 +312,19 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     assert_response :success
   end
 
+  def test_index_api_lists_inherited_templates
+    child_project_setup
+    IssueTemplateSetting.find(3).update!(inherit_templates: true)
+
+    @request.session[:user_id] = nil
+    @request.headers['X-Redmine-API-Key'] = User.find(1).api_key
+    with_settings(rest_api_enabled: '1') { get :index, params: { project_id: 3, format: 'json' } }
+    assert_response :success
+    inherited = json_response['inherit_templates']
+    assert_equal [1], inherited.map { |template| template['id'] }
+    assert_equal Tracker.find(1).name, inherited.first['tracker_name']
+  end
+
   def json_response
     ActiveSupport::JSON.decode @response.body
   end

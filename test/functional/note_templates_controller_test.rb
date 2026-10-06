@@ -148,4 +148,14 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
     post :load, params: { note_template: { note_template_id: 4 } }
     assert_response :not_found
   end
+
+  def test_index_api_lists_note_templates
+    @request.session[:user_id] = nil
+    @request.headers['X-Redmine-API-Key'] = User.find(2).api_key
+    with_settings(rest_api_enabled: '1') { get :index, params: { project_id: 1, format: 'json' } }
+    assert_response :success
+    template = JSON.parse(response.body)['note_templates'].detect { |t| t['id'] == 4 }
+    assert_equal 'note template 4', template['name']
+    assert_equal Tracker.find(1).name, template['tracker_name']
+  end
 end
