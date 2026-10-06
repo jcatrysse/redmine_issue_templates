@@ -9,12 +9,6 @@ end
 if ActiveSupport::Dependencies.autoload_once_paths.frozen?
   ActiveSupport::Dependencies.autoload_once_paths = ActiveSupport::Dependencies.autoload_once_paths.dup
 end
-ActiveSupport.on_load(:active_record) do
-  singleton = ActiveRecord::Base.singleton_class
-  unless singleton.method_defined?(:open)
-    singleton.define_method(:open) { |_arg = nil| }
-  end
-end
 require File.expand_path('../../../config/environment', __dir__)
 
 abort('The Rails environment is running in production mode!') if Rails.env.production?
