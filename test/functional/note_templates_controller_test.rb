@@ -111,4 +111,22 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
       assert_select 'td a[href=?]', "/projects/ecookbook/note_templates/3", count: 1
     end
   end
+
+  def test_template_of_another_project_is_not_found_through_this_project
+    Role.find(1).add_permission! :edit_issue_templates
+    # Project 2 is private; jsmith's role there (Developer) has no template permission.
+    template = NoteTemplate.create!(project_id: 2, tracker_id: 1, author_id: 1, name: 'Private note template',
+                                    description: 'Secret', visibility: 'open', enabled: false)
+
+    get :show, params: { project_id: 1, id: template.id }
+    assert_response :not_found
+
+    put :update, params: { project_id: 1, id: template.id, note_template: { description: 'Changed through project 1' } }
+    assert_response :not_found
+    assert_equal 'Secret', template.reload.description
+
+    delete :destroy, params: { project_id: 1, id: template.id }
+    assert_response :not_found
+    assert NoteTemplate.exists?(template.id)
+  end
 end

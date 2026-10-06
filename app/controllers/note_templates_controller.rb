@@ -119,8 +119,8 @@ class NoteTemplatesController < ApplicationController
   private
 
   def find_object
-    @note_template = NoteTemplate.find(params[:id])
-    @project = @note_template.project
+    # only templates of the project the permission was checked on
+    @note_template = NoteTemplate.find_by!(id: params[:id], project_id: @project.id)
   rescue ActiveRecord::RecordNotFound
     render_404
   end

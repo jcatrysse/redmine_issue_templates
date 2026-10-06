@@ -40,7 +40,9 @@ class IssueTemplatesController < ApplicationController
 
   def new
     if params[:copy_from].present?
-      @issue_template = IssueTemplate.find(params[:copy_from]).dup
+      @issue_template = IssueTemplate.find_by(id: params[:copy_from], project_id: @project.id)&.dup
+      return render_404 unless @issue_template
+
       @issue_template.title = @issue_template.copy_title
     else
       # create empty instance
@@ -156,8 +158,8 @@ class IssueTemplatesController < ApplicationController
   end
 
   def find_object
-    @issue_template = IssueTemplate.find(params[:id])
-    @project = @issue_template.project
+    # only templates of the project the permission was checked on
+    @issue_template = IssueTemplate.find_by!(id: params[:id], project_id: @project.id)
   rescue ActiveRecord::RecordNotFound
     render_404
   end

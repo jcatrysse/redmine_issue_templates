@@ -232,6 +232,35 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     assert_select 'option[class="global"]'
   end
 
+  def test_template_of_another_project_is_not_found_through_this_project
+    edit_permission
+    # Template 6 belongs to project 3, where jsmith has no template permission.
+    template = IssueTemplate.find(6)
+
+    get :show, params: { project_id: 1, id: 6 }
+    assert_response 404
+
+    put :update, params: { project_id: 1, id: 6, issue_template: { description: 'Changed through project 1' } }
+    assert_response 404
+    assert_equal template.description, template.reload.description
+
+    template.update_column(:enabled, false)
+    delete :destroy, params: { project_id: 1, id: 6 }
+    assert_response 404
+    assert IssueTemplate.exists?(6)
+
+    get :new, params: { project_id: 1, copy_from: 6 }
+    assert_response 404
+  end
+
+  def test_new_copies_a_template_of_the_same_project
+    edit_permission
+
+    get :new, params: { project_id: 1, copy_from: 1 }
+    assert_response :success
+    assert_select 'input[name=?][value=?]', 'issue_template[title]', 'copy_of_title1'
+  end
+
   def json_response
     ActiveSupport::JSON.decode @response.body
   end
