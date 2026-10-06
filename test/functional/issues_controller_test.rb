@@ -98,4 +98,12 @@ class IssuesControllerTest < Redmine::ControllerTest
     assert_select 'div#template_issue_notes', 0
     assert_select 'div[id^=template_journal_]', 0
   end
+
+  # The URLs are written into a script: '&' must stay '&', or project_id never reaches the server.
+  def test_new_after_tracker_change_writes_unescaped_template_urls
+    post :new, params: { project_id: 1, issue: { tracker_id: 1 }, form_update_triggered_by: 'issue_tracker_id' }, xhr: true
+    assert_response :success
+    assert_include 'load?is_triggered_by=issue_tracker_id&project_id=1', response.body
+    assert_not_include '&amp;project_id', response.body
+  end
 end
