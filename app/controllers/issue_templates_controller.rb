@@ -239,27 +239,24 @@ class IssueTemplatesController < ApplicationController
                 custom_fields: custom_fields.to_s, builtin_fields_enable: builtin_fields_enabled? } }
   end
 
-  # A project template can be loaded where the user may use templates: in its own project,
-  # or in a subproject when the template is shared with subprojects (inherited templates).
-  # A global template where it is offered: in the projects it is assigned to, or in every
-  # project when it applies to all projects.
+  # A template can be loaded where the issue form offers it: in the request's project when the
+  # user may use templates there, as a template of that project, as a shared template of an
+  # ancestor when the project inherits templates, or as a global template assigned to the
+  # project (or to all projects).
   def loadable?(issue_template)
-    return global_template_loadable?(issue_template) if issue_template.is_a?(GlobalIssueTemplate)
-
-    project = issue_template.project
-    return true if User.current.allowed_to?(:show_issue_templates, project)
-
-    issue_template.enabled_sharing? &&
-      project.descendants.where(Project.allowed_to_condition(User.current, :show_issue_templates)).exists?
-  end
-
-  def global_template_loadable?(issue_template)
     return true if User.current.admin?
 
-    project = Project.find_by(id: params[:project_id]) || Project.find_by(identifier: params[:project_id])
+    project = begin
+      Project.find(params[:project_id])
+    rescue ActiveRecord::RecordNotFound
+      nil
+    end
     return false unless project && User.current.allowed_to?(:show_issue_templates, project)
+    return apply_all_projects? || issue_template.project_ids.include?(project.id) if issue_template.is_a?(GlobalIssueTemplate)
+    return true if issue_template.project_id == project.id
 
-    apply_all_projects? || issue_template.project_ids.include?(project.id)
+    issue_template.enabled_sharing? && project.ancestors.include?(issue_template.project) &&
+      IssueTemplateSetting.find_or_create(project.id).enabled_inherit_templates?
   end
 
   # The fields include the project's assignable users, watchers and categories: the project

@@ -273,6 +273,7 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     Role.find(1).remove_permission! :show_issue_templates
     Role.non_member.add_permission! :show_issue_templates
     Project.find(3).enabled_modules.create!(name: 'issue_templates')
+    IssueTemplateSetting.find(3).update!(inherit_templates: true)
 
     post :load, params: { project_id: 3, template_id: 1 }
     assert_response :success
@@ -280,6 +281,15 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
 
     # template 2 of project 1 is not shared
     post :load, params: { project_id: 3, template_id: 2 }
+    assert_response 403
+
+    # for subproject 4, where jsmith may not use templates
+    post :load, params: { project_id: 4, template_id: 1 }
+    assert_response 403
+
+    # project 3 does not inherit templates any more
+    IssueTemplateSetting.find(3).update!(inherit_templates: false)
+    post :load, params: { project_id: 3, template_id: 1 }
     assert_response 403
   end
 
