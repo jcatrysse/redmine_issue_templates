@@ -4,7 +4,8 @@ require 'minitest/autorun'
 class IssueTemplatesControllerTest < Redmine::ControllerTest
   fixtures :projects, :users, :roles, :trackers, :members, :member_roles, :enabled_modules,
            :issue_templates,
-           :projects_trackers
+           :projects_trackers,
+           :global_issue_templates, :global_issue_templates_projects
 
   include Redmine::I18n
 
@@ -323,6 +324,21 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     inherited = json_response['inherit_templates']
     assert_equal [1], inherited.map { |template| template['id'] }
     assert_equal Tracker.find(1).name, inherited.first['tracker_name']
+  end
+
+  def test_load_global_template_requires_it_to_be_offered_in_the_project
+    # global template 1 is assigned to project 1, global template 2 to project 3 only
+    post :load, params: { project_id: 1, template_id: 2, template_type: 'global' }
+    assert_response 403
+
+    # jsmith's role in project 2 has no template permission
+    post :load, params: { project_id: 2, template_id: 1, template_type: 'global' }
+    assert_response 403
+
+    with_settings(plugin_redmine_issue_templates: { 'apply_global_template_to_all_projects' => 'true' }) do
+      post :load, params: { project_id: 1, template_id: 2, template_type: 'global' }
+      assert_response :success
+    end
   end
 
   def json_response

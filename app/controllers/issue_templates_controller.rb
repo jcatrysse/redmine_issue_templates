@@ -241,14 +241,25 @@ class IssueTemplatesController < ApplicationController
 
   # A project template can be loaded where the user may use templates: in its own project,
   # or in a subproject when the template is shared with subprojects (inherited templates).
+  # A global template where it is offered: in the projects it is assigned to, or in every
+  # project when it applies to all projects.
   def loadable?(issue_template)
-    return true if issue_template.is_a?(GlobalIssueTemplate)
+    return global_template_loadable?(issue_template) if issue_template.is_a?(GlobalIssueTemplate)
 
     project = issue_template.project
     return true if User.current.allowed_to?(:show_issue_templates, project)
 
     issue_template.enabled_sharing? &&
       project.descendants.where(Project.allowed_to_condition(User.current, :show_issue_templates)).exists?
+  end
+
+  def global_template_loadable?(issue_template)
+    return true if User.current.admin?
+
+    project = Project.find_by(id: params[:project_id]) || Project.find_by(identifier: params[:project_id])
+    return false unless project && User.current.allowed_to?(:show_issue_templates, project)
+
+    apply_all_projects? || issue_template.project_ids.include?(project.id)
   end
 
   # The fields include the project's assignable users, watchers and categories: the project

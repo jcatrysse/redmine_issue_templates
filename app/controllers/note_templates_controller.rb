@@ -69,6 +69,12 @@ class NoteTemplatesController < ApplicationController
 
       # prevent to load if the template visibility does not match.
       raise ActiveRecord::RecordNotFound unless note_template.loadable?(user_id: User.current.id, project_id: project_id)
+      # and only where it is offered (see GlobalNoteTemplate.visible_note_templates_condition)
+      unless User.current.admin?
+        project = Project.find(project_id)
+        raise ActiveRecord::RecordNotFound unless User.current.allowed_to?(:show_issue_templates, project) &&
+                                                  (apply_all_projects? || note_template.project_ids.include?(project.id))
+      end
     else
       note_template = NoteTemplate.find(note_template_id)
       # prevent to load if the template visibility does not match.

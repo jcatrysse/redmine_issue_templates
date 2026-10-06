@@ -6,7 +6,8 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
            :users, :roles,
            :members, :member_roles,
            :trackers, :projects_trackers,
-           :note_templates, :note_visible_roles
+           :note_templates, :note_visible_roles,
+           :global_note_templates
 
   def setup
     @request.session[:user_id] = 2  # jsmith
@@ -157,5 +158,22 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
     template = JSON.parse(response.body)['note_templates'].detect { |t| t['id'] == 4 }
     assert_equal 'note template 4', template['name']
     assert_equal Tracker.find(1).name, template['tracker_name']
+  end
+
+  def test_load_global_note_template_requires_it_to_be_offered_in_the_project
+    template = GlobalNoteTemplate.find(1) # open, assigned to no project
+    params = { note_template: { note_template_id: 1, template_type: 'global', project_id: 1 } }
+
+    post :load, params: params
+    assert_response :not_found
+
+    template.projects << Project.find(1)
+    post :load, params: params
+    assert_response :success
+    assert_equal 'global note template 1', JSON.parse(response.body)['note_template']['name']
+
+    Role.find(1).remove_permission! :show_issue_templates
+    post :load, params: params
+    assert_response :not_found
   end
 end
