@@ -15,14 +15,6 @@ module IssueTemplates
     def view_layouts_base_html_head(context = {})
       plugin_screen = need_template_js?(context[:controller])
       safe_join([
-        # In Redmine trunk (toward version 7.0), legacy raster icon styles have been
-        # extracted from application.css into legacy-icons-compat.css and are no longer
-        # loaded by default.
-        # https://www.redmine.org/issues/43206
-        #
-        # Load legacy-icons-compat.css on this plugin's screens so that raster icons
-        # can continue to be displayed.
-        plugin_screen ? redmine_legacy_icons_compat_stylesheet_link_tag : nil,
         stylesheet_link_tag('issue_templates', plugin: 'redmine_issue_templates'),
         plugin_screen ? redmine_issue_template_javascript_include_tag : nil
       ])
@@ -114,12 +106,6 @@ module IssueTemplates
         javascript_include_tag(source, type: :module)
       else
         javascript_include_tag(:issue_templates, plugin: :redmine_issue_templates, type: :module)
-      end
-    end
-
-    def redmine_legacy_icons_compat_stylesheet_link_tag
-      if Rails.root.join('app', 'assets', 'stylesheets', 'legacy-icons-compat.css').exist?
-        stylesheet_link_tag('legacy-icons-compat.css', media: 'all')
       end
     end
   end

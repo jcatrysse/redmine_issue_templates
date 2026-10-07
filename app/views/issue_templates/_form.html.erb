@@ -23,7 +23,7 @@
     <p><%= f.text_field :issue_title, required: false, size: 80, label: l(:issue_title) %>
       <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
          data-tooltip-area='issue_title_help_area'
-         data-tooltip-content='issue_title_help_content'>
+         data-tooltip-content='issue_title_help_content'><%= sprite_icon('help') %>
         <%= l(:help_for_this_field) %>
         <span class='tooltip-area' id='issue_title_help_area'></span>
       </a>
@@ -54,7 +54,7 @@
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-template-help-target='related_link_help_content'
        data-tooltip-area='related_link_help_area'
-       data-tooltip-content='related_link_help_content'>
+       data-tooltip-content='related_link_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='related_link_help_area'></span>
     </a>
@@ -64,7 +64,7 @@
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-template-help-target='link_title_help_content'
        data-tooltip-area='link_title_help_area'
-       data-tooltip-content='link_title_help_content'>
+       data-tooltip-content='link_title_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='link_title_help_area'></span>
     </a>
@@ -74,7 +74,7 @@
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-template-help-target='isdefault_help_content'
        data-tooltip-area='isdefault_help_area'
-       data-tooltip-content='isdefault_help_content'>
+       data-tooltip-content='isdefault_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='isdefault_help_area'></span>
     </a>
@@ -84,7 +84,7 @@
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-template-help-target='enabled_help_content'
        data-tooltip-area='enabled_help_area'
-       data-tooltip-content='enabled_help_content'>
+       data-tooltip-content='enabled_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='enabled_help_area'></span>
     </a>
@@ -93,7 +93,7 @@
     <%= f.check_box :enabled_sharing, label: l(:label_enabled_sharing) %>
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-tooltip-area='enabledsharing_help_area'
-       data-tooltip-content='enabledsharing_help_content'>
+       data-tooltip-content='enabledsharing_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='enabledsharing_help_area'></span>
     </a>
@@ -134,6 +134,7 @@
     trackerPulldownId: 'issue_template_tracker_id',
     builtinFields: <%= issue_template.builtin_fields.html_safe %>,
     locales: <%= raw localize_to_script.to_json %>,
+    icons: <%= raw template_field_icons.to_json %>,
   });
 </script>
 <% end %>

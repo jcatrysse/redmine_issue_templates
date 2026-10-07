@@ -1,7 +1,7 @@
 <h2 class='issue_template'><%=h "#{l(:issue_template)}" %></h2>
 <%= render partial: 'common/nodata', locals: { trackers: tracker_ids } %>
 <div class='contextual issue_templates'>
-  <%= link_to_if_authorized(l(:label_new_templates),
+  <%= link_to_if_authorized(sprite_icon('add', l(:label_new_templates)),
                             { controller: 'issue_templates', action: 'new', project_id: @project },
                               class: 'icon icon-add') %>
 </div>
@@ -20,7 +20,7 @@
 
 <% @template_map.each_key do |tracker| %>
     <div class='template_box'>
-      <h3 class='template_tracker'><%= tracker.name %></h3>
+      <h3 class='template_tracker'><%= sprite_icon('issue') %><%= tracker.name %></h3>
       <%= non_project_tracker_msg(project_tracker?(tracker, @project)) %>
 
       <table class='list issues table-sortable template_list'>
@@ -57,7 +57,7 @@
               </td>
               <td>
                 <div class='template_tooltip_wrapper'>
-                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                   <div class='wiki template_tooltip_body'>
                     <span class="title"><%= issue_template.title %></span>
                     <%= textilizable(issue_template.description) %>
@@ -131,7 +131,7 @@
                 </td>
                 <td>
                   <div class='template_tooltip_wrapper'>
-                    <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                    <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                     <div class='wiki template_tooltip_body'>
                       <span class='title'><%=h issue_template.title %></span>
                       <%=h textilizable(issue_template.description) %>
@@ -171,7 +171,7 @@
 
       <% if apply_all_projects %>
           <p>
-            <i class='issue_template icon-only settings'></i>
+            <i class='issue_template icon-only settings'><%= sprite_icon('bulb') %></i>
             <span class="issue_template help_content">
               <%= l(:note_apply_global_template_to_all_projects_setting_enabled) %><br/>
               <%= l(:note_project_local_template_override_global_template) %>
@@ -214,7 +214,7 @@
               </td>
               <td>
                 <div class='template_tooltip_wrapper'>
-                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                   <div class='wiki template_tooltip_body'>
                     <span class='title'><%=h issue_template.title %></span>
                     <%=h textilizable(issue_template.description) %>
@@ -260,7 +260,7 @@
 <a id='orphaned_template_link' class='icon template_tooltip orphaned_template_link template-help collapsible collapsed'
   title='<%= l(:orphaned_templates) %>'
   data-template-help-target='orphaned_templates'
-  data-url='<%= orphaned_templates_project_issue_templates_path %>'>
+  data-url='<%= orphaned_templates_project_issue_templates_path %>'><%= sprite_icon('zoom-in') %>
   <%= l(:orphaned_templates, default: 'Orphaned Templates') %>
 </a>
 

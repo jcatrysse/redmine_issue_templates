@@ -385,7 +385,7 @@ class ISSUE_TEMPLATE {
     }
   }
   updateTemplateSelect(event) {
-    const link = event.target;
+    const link = event.currentTarget;
     const optionId = link.getAttribute('data-issue-template-id');
     let optionSelector = '#issue_template > optgroup > option[value="' + optionId + '"]';
     if (link.classList.contains('template-global')) {
@@ -441,8 +441,8 @@ document.onreadystatechange = () => {
     const templateDisabledLink = document.querySelector('a.template-disabled-link');
     if (templateDisabledLink) {
       templateDisabledLink.addEventListener('click', (event) => {
-        const title = event.target.title;
-        if (title.length && event.target.hasAttribute('disabled')) {
+        const title = event.currentTarget.title;
+        if (title.length && event.currentTarget.hasAttribute('disabled')) {
           event.preventDefault();
           window.alert(title);
           event.stopPropagation();
@@ -455,10 +455,10 @@ document.onreadystatechange = () => {
     for (let i = 0; i < templateHelps.length; i++) {
       const element = templateHelps[i];
       element.addEventListener('mouseenter', (event) => {
-        const contentId = event.target.getAttribute('data-tooltip-content');
+        const contentId = event.currentTarget.getAttribute('data-tooltip-content');
         if (contentId == null) return;
 
-        const target = event.target.getAttribute('data-tooltip-area');
+        const target = event.currentTarget.getAttribute('data-tooltip-area');
         const obj = document.getElementById(target);
         if (obj) {
           obj.innerHTML = document.getElementById(contentId).innerHTML;
@@ -466,10 +466,10 @@ document.onreadystatechange = () => {
         }
       });
       element.addEventListener('mouseleave', (event) => {
-        const contentId = event.target.getAttribute('data-tooltip-content');
+        const contentId = event.currentTarget.getAttribute('data-tooltip-content');
         if (contentId == null) return;
 
-        const target = event.target.getAttribute('data-tooltip-area');
+        const target = event.currentTarget.getAttribute('data-tooltip-area');
         const obj = document.getElementById(target);
         if (obj) {
           obj.style.display = 'none';
@@ -495,7 +495,7 @@ document.onreadystatechange = () => {
       for (let i = 0; i < collapsibleHelps.length; i++) {
         const element = collapsibleHelps[i];
         element.addEventListener('click', (event) => {
-          const targetName = event.target.getAttribute('data-template-help-target');
+          const targetName = event.currentTarget.getAttribute('data-template-help-target');
           const target = document.getElementById(targetName);
           if (target) {
             const style = target.style.display;

@@ -44,7 +44,7 @@
                     label: l(:issue_template_note) %>
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-tooltip-area='memo_help_area'
-       data-tooltip-content='memo_help_content'>
+       data-tooltip-content='memo_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='memo_help_area'></span>
     </a>
@@ -54,7 +54,7 @@
     <%= f.check_box :enabled, label: l(:label_enabled) %>
     <a class='icon icon-help template-help' title='<%= l(:help_for_this_field) %>'
        data-tooltip-area='enabled_help_area'
-       data-tooltip-content='enabled_help_content'>
+       data-tooltip-content='enabled_help_content'><%= sprite_icon('help') %>
       <%= l(:help_for_this_field) %>
       <span class='tooltip-area' id='enabled_help_area'></span>
     </a>
@@ -80,12 +80,12 @@
 <div class='box'>
   <% if apply_all_projects %>
       <p>
-        <i class='issue_template icon-only settings'></i>
+        <i class='issue_template icon-only settings'><%= sprite_icon('bulb') %></i>
         <span class='issue_template help_content'>
           <%= l(:note_apply_global_template_to_all_projects_setting_enabled) %>
         </span>
         (
-        <%= link_to(l(:label_settings),
+        <%= link_to(sprite_icon('plugins', l(:label_settings)),
                     { controller: 'settings', action: 'plugin', id: 'redmine_issue_templates' },
                     class: 'issue_template icon plugins') %> )
       </p>

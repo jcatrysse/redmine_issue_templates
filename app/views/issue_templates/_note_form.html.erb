@@ -10,7 +10,7 @@
   <label for='select_note_template' style='font-weight: bold;'>
     <%=h l(:label_template_for_note, default: 'Template for note') %>
   </label>
-  <a class='icon template_tooltip' id='link_<%= element_id %>_dialog' href='#<%= element_id %>_dialog' onclick='noteTemplateNS.changeNoteTemplateList("<%= element_id %>")'>
+  <a class='icon template_tooltip' id='link_<%= element_id %>_dialog' href='#<%= element_id %>_dialog' onclick='noteTemplateNS.changeNoteTemplateList("<%= element_id %>")'><%= sprite_icon('zoom-in') %>
     <%=h l(:display_and_filter_issue_templates_in_dialog, default: 'Filter Templates') %>
   </a>
   <!-- dialog box -->

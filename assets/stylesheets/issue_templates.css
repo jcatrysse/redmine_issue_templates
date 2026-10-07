@@ -31,9 +31,9 @@ div.issue_template {
     margin-bottom: 20pt;
     display: block;
     font-style: italic;
-    padding: 8px 10px 8px 20px;
+    padding: 8px 10px;
     color: #31708f;
-    background: #eaf5fb url("../images/lamp.png") no-repeat 3px center;
+    background: #eaf5fb;
     border: solid #a7e4fd 1px;
     pointer-events: none;
 }
@@ -56,18 +56,19 @@ option.global {
 }
 
 .non_project_tracker {
-    background: url("../images/lamp.png") no-repeat 3px center;
     color: #dd8888;
     font-style: italic;
     font-weight: lighter;
     padding-top: 3px;
-    padding-left: 20px;
 }
 
 .template_tracker {
-    background: url("../images/ticket.png") no-repeat 3px center;
     padding-top: 3px;
-    padding-left: 18px;
+}
+
+.template_tracker svg.icon-svg, .non_project_tracker svg.icon-svg {
+    vertical-align: text-bottom;
+    margin-inline-end: 4px;
 }
 
 .template_box {
@@ -76,29 +77,6 @@ option.global {
     color: #505050;
     line-height: 1.5em;
     border: 1px solid #E4E4E4;
-}
-
-.icon-erase {
-    background-image: url("../images/eraser.png");
-}
-
-.icon-global_issue_templates {
-    background: url("../images/issue_templates.png") no-repeat 0% 50%;
-    padding-left: 20px;
-}
-
-.icon-template {
-    background: url("../images/issue_templates.png") no-repeat 3px center;
-}
-
-.icon-hint {
-    background: url("../images/ticket.png") no-repeat 3px center;
-}
-
-a.template_tooltip {
-    background-image: url("../images/preview.png");
-    background-repeat: no-repeat;
-    padding-left: 20px;
 }
 
 #issue_template-form textarea {
@@ -188,14 +166,6 @@ td.template_title {
 
 select.issue_template {
     width: 240px;
-}
-
-.issue_template.icon-only.settings {
-    background: url("../images/lamp.png") no-repeat 3px center;
-}
-
-.issue_template.icon.plugins {
-    background: url("../../../images/plugin.png") no-repeat 3px center;
 }
 
 .contextual.issue_templates {

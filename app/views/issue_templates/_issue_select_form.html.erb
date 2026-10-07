@@ -7,23 +7,23 @@
       <option value="">---</option>
     </select>
 
-    <a class='icon icon-hint' id='issue_template_related_link' style='display: none;' target='_blank' rel='noopener'></a>
-    <a class='icon template_tooltip' id='link_template_dialog' href='#issue_template_dialog'>
+    <a class='icon icon-hint' id='issue_template_related_link' style='display: none;' target='_blank' rel='noopener'><%= sprite_icon('link') %></a>
+    <a class='icon template_tooltip' id='link_template_dialog' href='#issue_template_dialog'><%= sprite_icon('zoom-in') %>
       <%=h l(:display_and_filter_issue_templates_in_dialog, default: 'Filter Templates') %>
     </a>
     <% if setting.enable_help? %>
         <a class='icon icon-help template-help' title='<%= l(:about_template_help_message) %>'
            data-tooltip-area='template-help-message-area'
-           data-tooltip-content='template_help_content'>
+           data-tooltip-content='template_help_content'><%= sprite_icon('help') %>
           <%= l(:label_help_message) %>
           <span class='tooltip-area' id='template-help-message-area'></span>
         </a>
     <% end %>
-    <a class='icon icon-erase' title='<%= l(:erase_issue_subject_and_description, default: 'Erase') %>' id='erase_template'>
+    <a class='icon icon-erase' title='<%= l(:erase_issue_subject_and_description, default: 'Erase') %>' id='erase_template'><%= sprite_icon('clear-query') %>
       <%= l(:erase_issue_subject_and_description, default: 'Erase') %>
     </a>
     <a class='icon icon-reload disabled' title='<%= l(:revert_before_applying_template, default: 'Revert') %>'
-       id='revert_template' disabled='disabled'>
+       id='revert_template' disabled='disabled'><%= sprite_icon('reload') %>
       <%= l(:revert_before_applying_template, default: 'Revert') %>
     </a>
     <span id='original_subject' style='display: none;'></span>
@@ -81,7 +81,7 @@
       shouldReplaced: '<%= setting.should_replaced %>',
       generalTextYes: '<%=h l(:general_text_Yes) %>',
       generalTextNo : '<%=h l(:general_text_No) %>',
-      confirmMessage: '<%=h l(:label_template_applied, default: "Issue template is applied. You can revert with click 'Revert' link.") %>'
+      confirmMessage: '<%= j sprite_icon('bulb') %> <%=h l(:label_template_applied, default: "Issue template is applied. You can revert with click 'Revert' link.") %>'
     }
 
     var templateNS = templateNS || new ISSUE_TEMPLATE(templateConfig)

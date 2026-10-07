@@ -1,12 +1,12 @@
 <h2 class='global_issue_template'><%=h "#{l(:global_issue_templates)}" %></h2>
 <%= render partial: 'common/nodata', locals: { trackers: trackers } %>
 <div class='contextual issue_templates'>
-  <%= link_to(l(:label_new_templates),
+  <%= link_to(sprite_icon('add', l(:label_new_templates)),
               { controller: 'global_issue_templates', action: 'new' }, class: 'icon icon-add') %>
-  <%= link_to(l(:global_note_templates, default: 'Global Note Templates'),
+  <%= link_to(sprite_icon('list', l(:global_note_templates, default: 'Global Note Templates')),
               { controller: 'global_note_templates', action: 'index' },
               class: 'icon icon-template') %>
-  <%= link_to(l(:label_settings),
+  <%= link_to(sprite_icon('plugins', l(:label_settings)),
               { controller: 'settings', action: 'plugin', id: 'redmine_issue_templates' },
               class: 'issue_template icon plugins') %>
 </div>
@@ -19,7 +19,7 @@
 <% end %>
 <% template_map.each_key do |tracker| %>
     <div class='template_box'>
-      <h3 class='template_tracker'><%= tracker.name %></h3>
+      <h3 class='template_tracker'><%= sprite_icon('issue') %><%= tracker.name %></h3>
 
       <table class='list issues template_list ui-sortable table-sortable'>
         <thead>
@@ -49,7 +49,7 @@
               </td>
               <td>
                 <div class='template_tooltip_wrapper'>
-                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                   <div class='wiki template_tooltip_body'>
                     <span class='title'><%= issue_template.title %></span>
                     <%= textilizable(issue_template.description) %>
@@ -87,7 +87,7 @@
 <a id='orphaned_template_link' class='icon template_tooltip orphaned_template_link template-help collapsible collapsed'
   title='<%= l(:orphaned_templates) %>'
   data-template-help-target='orphaned_templates'
-  data-url='<%= orphaned_templates_global_issue_templates_path %>'>
+  data-url='<%= orphaned_templates_global_issue_templates_path %>'><%= sprite_icon('zoom-in') %>
   <%= l(:orphaned_templates, default: 'Orphaned Templates') %>
 </a>
 

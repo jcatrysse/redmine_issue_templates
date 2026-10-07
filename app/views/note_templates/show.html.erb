@@ -1,21 +1,21 @@
 <div class='contextual'>
-  <%= link_to_if_authorized l(:button_edit),
+  <%= link_to_if_authorized sprite_icon('edit', l(:button_edit)),
                             { controller: 'note_templates', action: 'update', id: note_template,
                               project_id: project },
                             class: 'icon icon-edit', accesskey: accesskey(:edit),
                             onclick: "document.getElementById('edit-note_template').style.display = 'inline'; return false;" %>
-  <%= link_to_if_authorized l(:button_delete),
+  <%= link_to_if_authorized sprite_icon('del', l(:button_delete)),
                             { controller: 'note_templates', action: 'destroy',
                               id: note_template, project_id: project },
                               data: { confirm: l(:template_remove_confirm,
                               default: "Are you sure to remove this template? %{count} subprojects use this template.") },
                               title: l(:enabled_template_cannot_destroy, default: 'Only disabled template can be destroyed.'),
                             method: 'delete', class: 'icon icon-del template-disabled-link', disabled: note_template.enabled? %>
-  <%= link_to(l(:label_list_templates),
+  <%= link_to(sprite_icon('list', l(:label_list_templates)),
               { controller: 'note_templates',
                 action: 'index',
                 project_id: project }, class: 'icon icon-template') %>
-  <%= link_to_if_authorized(l(:label_new_templates),
+  <%= link_to_if_authorized(sprite_icon('add', l(:label_new_templates)),
                             { controller: 'note_templates', action: 'new', project_id: @project },
                               class: 'icon icon-add') %>
 </div>

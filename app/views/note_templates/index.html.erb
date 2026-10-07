@@ -1,7 +1,7 @@
 <h2 class='note_template'><%=h "#{l(:note_template)}" %></h2>
 <%= render partial: 'common/nodata', locals: { trackers: tracker_ids } %>
 <div class='contextual note_templates'>
-  <%= link_to_if_authorized(l(:label_new_templates),
+  <%= link_to_if_authorized(sprite_icon('add', l(:label_new_templates)),
                             { controller: 'note_templates', action: 'new', project_id: @project },
                               class: 'icon icon-add') %>
 </div>
@@ -20,7 +20,7 @@
 
 <% @template_map.each_key do |tracker| %>
     <div class='template_box'>
-      <h3 class='template_tracker'><%= tracker.name %></h3>
+      <h3 class='template_tracker'><%= sprite_icon('issue') %><%= tracker.name %></h3>
 
       <table class='list issues table-sortable template_list'>
         <thead>
@@ -56,7 +56,7 @@
               </td>
               <td>
                 <div class='template_tooltip_wrapper'>
-                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                   <div class='wiki template_tooltip_body'>
                     <span class='title'><%= note_template.name %></span>
                     <%= textilizable(note_template.description) %>
@@ -107,7 +107,7 @@
 
       <% if apply_all_projects %>
           <p>
-            <i class='issue_template icon-only settings'></i>
+            <i class='issue_template icon-only settings'><%= sprite_icon('bulb') %></i>
             <span class="issue_template help_content">
               <%= l(:note_apply_global_template_to_all_projects_setting_enabled) %><br/>
               <%= l(:note_project_local_template_override_global_template) %>
@@ -150,7 +150,7 @@
               </td>
               <td>
                 <div class='template_tooltip_wrapper'>
-                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'></a>
+                  <a class='icon-only template_tooltip' title='<%= l(:label_preview) %>'><%= sprite_icon('zoom-in') %></a>
                   <div class='wiki template_tooltip_body'>
                     <span class='title'><%= note_template.name %></span>
                     <%= textilizable(note_template.description) %>

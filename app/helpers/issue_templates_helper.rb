@@ -5,10 +5,15 @@ module IssueTemplatesHelper
     project.trackers.exists?(tracker.id)
   end
 
+  # SVG icons for the built-in field generator (scripts/components), keyed by sprite name
+  def template_field_icons
+    %w[help add reload checked del].index_with { |name| sprite_icon(name).to_str }
+  end
+
   def non_project_tracker_msg(flag)
     return '' if flag
 
-    "<font class=\"non_project_tracker\">#{l(:unused_tracker_at_this_project)}</font>".html_safe
+    content_tag(:font, sprite_icon('warning', l(:unused_tracker_at_this_project)), class: 'non_project_tracker')
   end
 
   def template_target_trackers(project, issue_template)

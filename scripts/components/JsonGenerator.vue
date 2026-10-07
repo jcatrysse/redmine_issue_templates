@@ -12,6 +12,7 @@
          :title="l('help_for_this_field')"
          data-tooltip-area="builtin_fields_help_area"
          data-tooltip-content="builtin_fields_help_content">
+        <span v-html="icon('help')"></span>
         {{ l('help_for_this_field') }}
         <span class="tooltip-area" id="builtin_fields_help_area"></span>
       </a>
@@ -30,7 +31,7 @@
         v-model="model.value"
       />
       <span style="margin-left: 4px;" class="icon icon-add" v-on:click="addField">
-
+        <span v-html="icon('add')"></span>
         {{ l('button_add') }}
       </span>
     </p>
@@ -41,9 +42,11 @@
     <display-area :items="items" v-on:delete="deleteField" />
     <p>
       <span class="icon icon-reload" id="reset-json" v-on:click="loadField">
+        <span v-html="icon('reload')"></span>
         {{ l('button_reset') }}
       </span>
       <span class="icon icon-checked" v-on:click="applyJson">
+        <span v-html="icon('checked')"></span>
         {{ l('button_apply') }}
       </span>
     </p>

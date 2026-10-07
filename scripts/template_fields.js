@@ -2,6 +2,7 @@ import Vue from 'vue';
 import JsonGenerator from './components/JsonGenerator.vue';
 import { CustomFieldPlugin } from './plugins/customFields';
 import { LocalePlugin } from './plugins/locales';
+import { IconPlugin } from './plugins/icons';
 
 const TEMPLATE_FIELDS = function (props) {
   const {
@@ -9,8 +10,10 @@ const TEMPLATE_FIELDS = function (props) {
     templateId,
     projectId,
     locales,
+    icons,
   } = props;
   Vue.use(LocalePlugin, locales);
+  Vue.use(IconPlugin, icons);
   Vue.use(CustomFieldPlugin, {
     baseUrl: loadSelectableFieldsPath,
     templateId,
