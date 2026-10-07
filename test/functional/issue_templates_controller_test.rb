@@ -351,6 +351,17 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     end
   end
 
+  def test_list_templates_api_names_the_tracker_of_global_templates
+    @request.session[:user_id] = nil
+    @request.headers['X-Redmine-API-Key'] = User.find(2).api_key
+    with_settings(rest_api_enabled: '1') do
+      get :list_templates, params: { project_id: 1, issue_tracker_id: 1, format: 'json' }
+    end
+    assert_response :success
+    global = json_response['global_issue_templates'].detect { |t| t['id'] == 1 }
+    assert_equal Tracker.find(1).name, global['tracker_name']
+  end
+
   def json_response
     ActiveSupport::JSON.decode @response.body
   end

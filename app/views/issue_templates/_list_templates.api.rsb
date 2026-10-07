@@ -3,7 +3,7 @@ api.array :global_issue_templates do
     api.template do
       api.id template.id
       api.tracker_id template.tracker_id
-      api.tracker_name template.tracker.id
+      api.tracker_name template.tracker.try(:name)
       api.title template.title
       api.issue_title template.issue_title
       api.description template.description
