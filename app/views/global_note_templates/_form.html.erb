@@ -93,7 +93,7 @@
   <% if projects.any? %>
       <fieldset class='box box-white' id='global_note_template_project_ids'
                 style='<%= apply_all_projects ? 'opacity: 0.6' : '' %>'>
-        <a class='collapsible collapsed template-help' data-template-help-target='all_projects'>
+        <a class='icon icon-collapsed collapsible collapsed template-help' data-template-help-target='all_projects'><%= sprite_icon('angle-right', rtl: true) %>
           <%= l(:project_list_associated_this_template, { applied: note_template.projects.length, all: projects.length }) %>
         </a>
         <div id='all_projects' style='display: none;'>

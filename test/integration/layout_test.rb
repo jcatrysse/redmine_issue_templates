@@ -49,6 +49,9 @@ class LayoutTest < Redmine::IntegrationTest
     assert_select 'link[href*="legacy-icons-compat"]', 0
     assert_select '#content .contextual a.icon-add svg.icon-svg use[href*="#icon--add"]'
 
+    get '/global_issue_templates/new'
+    assert_select '#global_issue_template_project_ids a.collapsible.icon-collapsed svg.icon-svg use[href*="#icon--angle-right"]'
+
     get '/projects/ecookbook/issue_templates'
     assert_response :success
     assert_select 'link[href*="legacy-icons-compat"]', 0

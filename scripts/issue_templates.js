@@ -495,11 +495,18 @@ document.onreadystatechange = () => {
       for (let i = 0; i < collapsibleHelps.length; i++) {
         const element = collapsibleHelps[i];
         element.addEventListener('click', (event) => {
-          const targetName = event.currentTarget.getAttribute('data-template-help-target');
+          const link = event.currentTarget;
+          const targetName = link.getAttribute('data-template-help-target');
           const target = document.getElementById(targetName);
           if (target) {
             const style = target.style.display;
             target.style.display = (style === 'none' ? 'inline' : 'none');
+          }
+          // the arrow of an expand/collapse link, the way Redmine's toggleFieldset does it
+          if (link.matches('.icon-collapsed, .icon-expanded') && typeof window.toggleExpandCollapseIcon === 'function') {
+            link.classList.toggle('icon-collapsed');
+            link.classList.toggle('icon-expanded');
+            window.toggleExpandCollapseIcon(link);
           }
         });
       }
