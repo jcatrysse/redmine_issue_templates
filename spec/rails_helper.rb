@@ -62,6 +62,10 @@ RSpec.configure do |config|
 
   config.before(:each) do
     DatabaseCleaner.start
+    # truncation also removes Redmine's built-in groups, which core expects (User#roles for
+    # anonymous, used by other plugins' menu conditions on every page)
+    GroupAnonymous.load_instance
+    GroupNonMember.load_instance
   end
 
   config.after(:each) do
