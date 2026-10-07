@@ -76,7 +76,7 @@ class ISSUE_TEMPLATE {
 
     try {
       if (CKEDITOR.instances.issue_description) {
-        CKEDITOR.instances.issue_description.setData(ns.escapeHTML(oldDescription.text()));
+        CKEDITOR.instances.issue_description.setData(ns.escapeHTML(oldDescription.textContent));
       }
     } catch (e) {
       // do nothing.

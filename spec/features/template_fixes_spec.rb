@@ -70,4 +70,21 @@ feature 'Template fixes', js: true do
     select 'Bug', from: 'issue_template[tracker_id]'
     expect(page).to have_css('#fields_setting_display_area li', text: "#{I18n.t(:field_start_date)}: 2026-10-07")
   end
+
+  # Revert put the text back in the textarea but not in a CKEditor (redmine_ckeditor plugin): it
+  # called jQuery's text() on a DOM node and the error was swallowed. CKEditor is stubbed here.
+  scenario 'Revert puts the text from before the template back into CKEditor' do
+    visit new_project_issue_path(Project.find('ecookbook'))
+    fill_in 'issue_subject', with: 'My subject'
+    fill_in 'issue_description', with: 'My text'
+    page.execute_script(<<~JS)
+      window.CKEDITOR = { instances: { issue_description: { data: null, setData(d) { this.data = d; } } } };
+    JS
+    select 'Fix template', from: 'issue_template'
+    expect(page).to have_field('issue_description', with: /Fix description/)
+    expect(page.evaluate_script('CKEDITOR.instances.issue_description.data')).to match(/Fix description/)
+    find('#revert_template').click
+    expect(page).to have_field('issue_description', with: 'My text')
+    expect(page.evaluate_script('CKEDITOR.instances.issue_description.data')).to eq 'My text'
+  end
 end
