@@ -57,6 +57,7 @@ module IssueTemplates
 
     def tracker_project_ids(context, tracker_id)
       project = context[:project]
+      issue = context[:issue] || context[:journal]&.issue
       project_id = project.present? ? project.id : issue.try(:project_id)
       [tracker_id, project_id]
     end
