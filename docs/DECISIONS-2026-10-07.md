@@ -31,3 +31,10 @@ What to do:
 7. Update Status, the inventory, the work list and "After the upgrade". Push `redmine70-migration` after every commit.
 8. These decisions are final; do not stop to ask about them. If one turns out to be impossible, write down why in the plan and carry on with the rest.
 9. End with a short report in Dutch: per decision what you did (commit), test numbers, e2e numbers (scenarios, screenshots, problems), the review result, what is left for Jan.
+
+## Round 2, decided by Jan on 2026-10-07 (evening)
+
+Jan answered these follow-up questions from the migration report the same way, one at a time, in the coordinating session.
+
+- redmine_issue_templates-n2-1 (templates 4): De review vond enkele kleine fouten die al in de originele plugin zaten, bijvoorbeeld een tekstvak in plaats van een datumkiezer bij datumvelden. Ze hebben niets met Redmine 7 te maken. Herstellen we die?
+  Jan chose: "Nu meteen herstellen" (De fouten zijn weg bij de upgrade, maar het is extra werk en testwerk vlak ervoor.). Carry this out.
