@@ -24,6 +24,7 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Complexity (1 trivial .. 5 rewrite) | 1 |
 | Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz + latest 7.0-stable), Rails 8.1.3.1, Ruby 3.3.6, PostgreSQL 16 and MariaDB 10.11 |
 | Branch head when this file was written | `30ff6e7` |
+| Round 2 (2026-10-07, Jan: "Nu meteen herstellen") | DONE: 9 small upstream bugs fixed, one commit each with a test that fails without it (1957c44..f815d42); 2 review findings were no bug. Tests 112 runs, 155 examples, 0 failures; e2e 123 screenshots, 0 problems; OpenAI review 5 findings, none a bug. See "Round 2: the small upstream bugs" |
 | Decisions of Jan (2026-10-07) | DONE: icons switched to Redmine 7's SVG sprite (7b8f748, c097447), workflows manual only (3cd03db), no-offer and API 'name' recorded; PostgreSQL only from here. Tests green alone and with 30 other GEOxyz plugins; e2e 115 screenshots, 0 problems alone. See "Session of 2026-10-07" |
 | Migration session (2026-10-06) | DONE, see "Result of the migration session" below. Tests green on PostgreSQL and MariaDB (Redmine 7.0-stable-GEOxyz) and on 5.1-stable; e2e 105 screenshots, 0 problems on both databases; OpenAI review 3 rounds |
 
@@ -298,15 +299,10 @@ Redmine 7.0-stable-GEOxyz on PostgreSQL with redmine_issue_field_visibility, red
 ### Open items (not done, with reason)
 
 - `spec/features/drag_and_drop_spec.rb:24` (issue templates) is intermittent in this container: in failing runs no mousedown reaches the page at all (a capture listener on document saw nothing, while elementFromPoint is the sort handle; in passing runs mousedown, sortstart and sortupdate fire). Fails on the code before any change of this branch too, on 7.0 and 5.1; the final runs on PostgreSQL, MariaDB and 5.1 passed. Test left unchanged; looks like chromedriver input timing, not the plugin.
-- Not changed, noted: `_list_templates.api.rsb` returns the tracker id under `tracker_name` for the first group; a new note/issue template form shows "Orphaned template from tracker" next to an empty tracker select until one is chosen; `apply_global_template_to_all_projects` only tested as a setting plus the load rule (templates hide global ones when the project has its own, upstream behaviour).
-- Upstream JS/view bugs found by the OpenAI review of 2026-10-07, not fixed in passing (separate
-  change if wanted): the built-in field generator offers a text box for date fields
-  (AVAILABLE_FORMATS has 'data' for 'date'); single-select list values can mark substring options
-  ('1' also selects '10'); changing the tracker does not refresh the generator's items; the
-  #errorExplanation check in loadTemplate never matches; CKEditor revert uses jQuery's text() on a
-  DOM node (only with a CKEditor plugin); the apply arrow in the template dialog has no pointer
-  cursor ('cursor: pointer;' written into the class); the global note template's Delete link uses
-  name instead of title for its tooltip.
+- Not changed, noted: `apply_global_template_to_all_projects` only tested as a setting plus the
+  load rule (templates hide global ones when the project has its own, upstream behaviour). The
+  other items noted here before (tracker_name, orphaned message, the review's JS bugs) were fixed
+  in round 2, see below.
 - `spec/rails_helper.rb` still has the guarded autoload_paths.dup lines of GEOxyz 751e719, kept
   "for 5.1/6.1"; not needed on Redmine 7 (tried) and could go now that 5.1 is dropped.
 - Kit issues met (2026-10-07): a `public/assets/.manifest.json` left by an earlier production start
@@ -421,6 +417,45 @@ This plugin:
    7b8f748 (every icon from the SVG sprite, legacy-icons-compat.css and the plugin's PNGs gone, JS
    bundle rebuilt) and c097447 (project list toggle arrow), tested by
    test/integration/layout_test.rb and the e2e scenario test/e2e/icons.mjs.
+
+### Round 2: the small upstream bugs (decided and done 2026-10-07)
+
+Jan chose "Nu meteen herstellen" (docs/DECISIONS-2026-10-07.md, Round 2): fix now the small bugs
+the reviews found in the original plugin, one commit per bug with a test that fails without it.
+Feature specs in spec/features/template_fixes_spec.rb, e2e scenario test/e2e/fixes.mjs (screenshots
+docs/e2e/fixes-*.png, looked at).
+
+| # | Bug | Commit | Test that fails without it |
+|---|---|---|---|
+| 1 | Delete link of an enabled global note template: tooltip in `name` instead of `title` | 1957c44 | functional global_note_templates; e2e fixes-global-note-delete-title |
+| 2 | list_templates.json: `tracker_name` of a global template was the tracker id | a6e0134 | functional issue_templates (API); e2e fixes-list-templates-tracker-name |
+| 3 | Tracker name put unescaped into the issue form's script (`html_safe`) | 4c36c42 | functional issues (tracker `Bug's </script>`) |
+| 4 | Note template hook took no project from a journal-only context | 418636f | unit journals_hook |
+| 5 | New template form said "Orphaned template from tracker" | 8d0c73f | 4 functional tests; e2e fixes-new-template-not-orphaned |
+| 6 | Default template appended again after a refused new issue (#errorExplanation check never true) | 0b9ab5e, f815d42 | 2 feature specs; e2e fixes-refused-issue-keeps-text, -choose-template |
+| 7 | Generator: text box for date fields ('data' for 'date') | cc7f0aa | feature spec; e2e fixes-generator-date |
+| 8 | Generator: fields not checked again after a tracker change | c9f78aa | feature spec; e2e fixes-generator-tracker-change |
+| 9 | Revert did not restore CKEditor (jQuery text() on a DOM node) | 3a3e22c | feature spec with a stubbed CKEDITOR; e2e fixes-revert-ckeditor |
+
+f815d42 came from the own review of 0b9ab5e: the pulldown and the dialog use the same change event,
+so after a refused form a template the user chose was ignored too; only the automatic load after
+setPulldown is skipped now.
+
+Not a bug, nothing changed:
+- Single-select substring match in FieldValue.vue (`value.includes(val)`): with Vue 2.7 the select
+  always emits an array and the model is `''` or that array, so a string never reaches it.
+- Pointer cursor on the dialog's apply arrow: `.template-update-link { cursor: pointer; }` is in the
+  plugin's CSS; the stray text in the class attribute has no effect.
+- Seen, harmless: `%(start_date due_date).include?(field)` in issue_templates_common.rb is a string,
+  not an array, so it is a substring test; it gives the right answer for every core field.
+
+Tests (7.0-stable-GEOxyz, PostgreSQL 16, alone): 112 runs, 428 assertions, 0 failures, 0 errors;
+155 examples, 0 failures, 2 pending (upstream). E2E (`start_server.sh --reset`, `e2e.sh`): smoke 30,
+core 6, fixes 8, global-templates 16, icons 10, new-issue-template 10, note-templates 14,
+project-issue-templates 14, rest-api 2, settings 13 screenshots, 0 problems. OpenAI review of
+7b9870a..f815d42 (docs/reviews/openai-2026-10-07-f815d42.md): 5 findings, none a bug (the orphan
+message sits inside the `tracker.blank?` branch; Journal has `belongs_to :issue`), each with a
+Resolution line. The run together with the other GEOxyz plugins was not repeated for round 2.
 
 ## Analysis report (2026-10-06, Dutch)
 
