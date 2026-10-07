@@ -72,7 +72,7 @@ import FieldValue from './FieldValue.vue';
 
 const AVAILABLE_FORMATS = [
   'int',
-  'data',
+  'date',
   'ratio',
   'list',
   'bool',

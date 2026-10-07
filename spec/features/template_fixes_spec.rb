@@ -47,4 +47,13 @@ feature 'Template fixes', js: true do
     sleep(1)
     expect(page.find('#issue_description').value).to eq 'Typed text'
   end
+
+  # The built-in field generator offered a text box for dates: its formats listed 'data'.
+  scenario 'The built-in field generator offers a date input for a date field' do
+    Setting.send 'plugin_redmine_issue_templates=', 'enable_builtin_fields' => 'true'
+    visit project_issue_template_path(Project.find('ecookbook'), template)
+    select I18n.t(:field_start_date), from: 'field_selector'
+    expect(page).to have_css('#json_generator input#issue_template_json_setting_field[type="date"]')
+  end
+
 end
