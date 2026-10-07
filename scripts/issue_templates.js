@@ -105,8 +105,7 @@ class ISSUE_TEMPLATE {
       // when operator submits new issue form without required field and returns
       // with error message. If flash message #errorExplanation exists, not overwrited.
       // (https://github.com/akiko-pusu/redmine_issue_templates/issues/50)
-      if (document.querySelector('#errorExplanation') && document.querySelector('#errorExplanation')[0]) {
-        document.querySelector('#errorExplanation');
+      if (document.querySelector('#errorExplanation')) {
         return;
       }
 
