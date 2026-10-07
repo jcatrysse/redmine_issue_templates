@@ -38,4 +38,13 @@ class GlobalNoteTemplatesControllerTest < Redmine::ControllerTest
     assert_redirected_to controller: 'global_note_templates', action: 'index'
     assert_not GlobalNoteTemplate.exists?(1)
   end
+
+  # The delete link's title is what the page script shows (and why it stops the click) for an
+  # enabled template.
+  def test_show_explains_on_the_delete_link_that_only_disabled_templates_can_be_deleted
+    @request.session[:user_id] = 1
+    get :show, params: { id: 1 }
+    assert_response :success
+    assert_select 'a.icon-del.template-disabled-link[disabled][title=?]', I18n.t(:enabled_template_cannot_destroy)
+  end
 end

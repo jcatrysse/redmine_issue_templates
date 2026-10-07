@@ -2,7 +2,7 @@
 <%= link_to sprite_icon('del', l(:button_delete)),
   { controller: 'global_note_templates', action: 'destroy', id: note_template },
     data: { confirm: l(:text_are_you_sure) },
-    name: l(:enabled_template_cannot_destroy, default: 'Only disabled template can be destroyed.'),
+    title: l(:enabled_template_cannot_destroy, default: 'Only disabled template can be destroyed.'),
     disabled: note_template.enabled?, method: 'delete', class: 'icon icon-del template-disabled-link' %>
 <%= link_to(sprite_icon('list', l(:label_list_templates)),
               { controller: 'global_note_templates', action: 'index' }, class: 'icon icon-template') %>
