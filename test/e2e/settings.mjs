@@ -52,7 +52,11 @@ await t.go(`/projects/${P}/issues/new`);
 await t.page.waitForSelector('#template_area', { state: 'visible' });
 await t.page.selectOption('#issue_template', { label: 'E2E bug minimal' });
 await t.page.waitForFunction(() => document.querySelector('#issue_priority_id option:checked')?.textContent === 'High', null, { timeout: 10000 })
-  .catch(async () => fail(`priority after the template: ${await t.page.locator('#issue_priority_id option:checked').innerText()}`));
+  .catch(async () => {
+    const priority = await t.page.locator('#issue_priority_id option:checked').allInnerTexts();
+    const itil = await t.page.locator('#itil_priority_field').count();
+    fail(`priority after the template: ${priority.join() || 'no #issue_priority_id'}${itil ? ' (priority field replaced by redmine_itil_priority)' : ''}`);
+  });
 await t.shot('builtin-applied', 'Choosing the template on a new issue also sets Priority to High');
 
 await t.go('/issues/2');

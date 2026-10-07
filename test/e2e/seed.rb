@@ -78,6 +78,13 @@ IssueTemplateSetting.find_or_create(sub.id).update!(inherit_templates: true)
 puts "Plugin seed: #{IssueTemplate.count} issue templates, #{NoteTemplate.count} note templates, " \
      "#{GlobalIssueTemplate.count} global issue templates, #{GlobalNoteTemplate.count} global note templates"
 
+# With redmine_view_issue_description installed (GEOxyz), members need its permission to open an
+# issue; GEOxyz roles have it, so give it to the generic seed's Reporter role as well.
+if Redmine::AccessControl.permission(:view_issue_description)
+  reporter_role = Role.find_by(name: 'Reporter')
+  reporter_role&.add_permission!(:view_issue_description) unless reporter_role&.has_permission?(:view_issue_description)
+end
+
 # the REST API scenario
 Setting.rest_api_enabled = '1'
 
