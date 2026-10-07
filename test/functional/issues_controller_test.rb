@@ -108,4 +108,12 @@ class IssuesControllerTest < Redmine::ControllerTest
     assert_include 'load?is_triggered_by=issue_tracker_id&project_id=1', response.body
     assert_not_include '&amp;project_id', response.body
   end
+
+  # A quote in a tracker name must not end the JavaScript string of the template dialog title.
+  def test_new_escapes_the_tracker_name_in_the_template_script
+    Tracker.find(1).update_column(:name, "Bug's </script>")
+    get :new, params: { project_id: 1, issue: { tracker_id: 1 } }
+    assert_response :success
+    assert_include "templateListTitle = 'Issue template: Bug\\'s <\\/script>'", response.body
+  end
 end
