@@ -98,6 +98,10 @@ if (!(await t.page.locator('#errorExplanation').count())) fail('the issue withou
 const kept = await t.page.inputValue('#issue_description');
 if (kept !== 'Typed text, sent without a subject') fail(`description after the refusal: ${JSON.stringify(kept)}`);
 await t.shot('refused-issue-keeps-text', 'A new issue without a subject is refused; the description keeps what was sent, the default template is not added to it again');
+await t.page.selectOption('#issue_template', { label: 'E2E bug minimal' });
+await t.page.waitForFunction(() => document.querySelector('#issue_description').value.includes('What happened?'), null, { timeout: 10000 })
+  .catch(() => fail('a template chosen after the refusal is not applied'));
+await t.shot('refused-issue-choose-template', 'After the refusal a template the user chooses is still applied (added to the text that was sent)');
 
 await t.go(`/projects/${P}/issues/new`);
 await t.page.waitForFunction(() => document.querySelector('#issue_description')?.value.includes('Steps to reproduce'));

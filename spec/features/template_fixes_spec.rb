@@ -48,6 +48,22 @@ feature 'Template fixes', js: true do
     expect(page.find('#issue_description').value).to eq 'Typed text'
   end
 
+  scenario 'A template chosen after a refused new issue is still applied' do
+    template.update!(is_default: true)
+    FactoryBot.create(:issue_template, project_id: 1, tracker_id: 1,
+                                       title: 'Other template', description: 'Other description')
+    visit new_project_issue_path(Project.find('ecookbook'))
+    expect(page).to have_field('issue_description', with: /Fix description/)
+    page.execute_script(<<~JS)
+      document.getElementById('issue_subject').value = '';
+      document.getElementById('issue_description').value = 'Typed text';
+      document.getElementById('issue-form').submit();
+    JS
+    expect(page).to have_css('#errorExplanation')
+    select 'Other template', from: 'issue_template'
+    expect(page).to have_field('issue_description', with: /Other description/)
+  end
+
   # The built-in field generator offered a text box for dates: its formats listed 'data'.
   scenario 'The built-in field generator offers a date input for a date field' do
     Setting.send 'plugin_redmine_issue_templates=', 'enable_builtin_fields' => 'true'

@@ -88,6 +88,8 @@ class ISSUE_TEMPLATE {
   loadTemplate() {
     const selectedTemplate = document.getElementById('issue_template');
     const ns = this;
+    const loadedWithPulldown = ns.loadingWithPulldown;
+    ns.loadingWithPulldown = false;
 
     if (selectedTemplate.value === '') return;
 
@@ -105,7 +107,7 @@ class ISSUE_TEMPLATE {
       // when operator submits new issue form without required field and returns
       // with error message. If flash message #errorExplanation exists, not overwrited.
       // (https://github.com/akiko-pusu/redmine_issue_templates/issues/50)
-      if (document.querySelector('#errorExplanation')) {
+      if (loadedWithPulldown && document.querySelector('#errorExplanation')) {
         return;
       }
 
@@ -257,6 +259,7 @@ class ISSUE_TEMPLATE {
         document.getElementById('template_area').style.display = 'inline';
       }
       const changeEvent = new Event('change');
+      ns.loadingWithPulldown = true;
       document.getElementById('issue_template').dispatchEvent(changeEvent);
     });
   }

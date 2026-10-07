@@ -1,6 +1,6 @@
 # fixes
 
-Run 2026-10-07T19:42:07.011Z against http://127.0.0.1:3000.
+Run 2026-10-07T19:52:47.969Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
@@ -10,4 +10,5 @@ Run 2026-10-07T19:42:07.011Z against http://127.0.0.1:3000.
 | ![](fixes-generator-date.png) | manager | `/projects/e2e-project/issue_templates/2` | The built-in field generator offers a date input for Start date (it used to be a text box) |
 | ![](fixes-generator-tracker-change.png) | manager | `/projects/e2e-project/issue_templates/2` | After choosing the tracker Feature, which has no Start date here, the list marks the field unavailable at once |
 | ![](fixes-refused-issue-keeps-text.png) | manager | `/projects/e2e-project/issues` | A new issue without a subject is refused; the description keeps what was sent, the default template is not added to it again |
+| ![](fixes-refused-issue-choose-template.png) | manager | `/projects/e2e-project/issues` | After the refusal a template the user chooses is still applied (added to the text that was sent) |
 | ![](fixes-revert-ckeditor.png) | manager | `/projects/e2e-project/issues/new` | Revert after applying a template: the textarea and a (stubbed) CKEditor both get "My text" back; CKEditor used to keep the template text |

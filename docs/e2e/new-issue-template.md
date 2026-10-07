@@ -1,6 +1,6 @@
 # new-issue-template
 
-Run 2026-10-07T19:42:53.495Z against http://127.0.0.1:3000.
+Run 2026-10-07T19:53:33.638Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
