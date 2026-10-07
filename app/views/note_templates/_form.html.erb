@@ -9,8 +9,9 @@
           <%= f.select :tracker_id, template_target_trackers(project, note_template),
                        required: true, label: l(:label_tracker), include_blank: true  %>
 
-          <%= h note_template.tracker.present? ? note_template.tracker.name :
-                    l(:orphaned_template, default: 'Orphaned template from tracker') %>
+          <% if note_template.persisted? %>
+            <%= l(:orphaned_template, default: 'Orphaned template from tracker') %>
+          <% end %>
       <% else %>
           <%= f.select :tracker_id, template_target_trackers(project, note_template),
                        required: true, label: l(:label_tracker), selected: note_template.tracker.id %>

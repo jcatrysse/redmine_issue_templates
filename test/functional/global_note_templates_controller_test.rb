@@ -47,4 +47,11 @@ class GlobalNoteTemplatesControllerTest < Redmine::ControllerTest
     assert_response :success
     assert_select 'a.icon-del.template-disabled-link[disabled][title=?]', I18n.t(:enabled_template_cannot_destroy)
   end
+
+  def test_new_form_does_not_call_the_template_orphaned
+    @request.session[:user_id] = 1
+    get :new
+    assert_response :success
+    assert_not_include I18n.t(:orphaned_template), response.body
+  end
 end

@@ -133,4 +133,10 @@ class GlobalIssueTemplatesControllerTest < Redmine::ControllerTest
     assert_response 403
     assert GlobalIssueTemplate.exists?(2)
   end
+
+  def test_new_form_does_not_call_the_template_orphaned
+    get :new
+    assert_response :success
+    assert_not_include I18n.t(:orphaned_template), response.body
+  end
 end

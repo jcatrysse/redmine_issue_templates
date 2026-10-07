@@ -362,6 +362,18 @@ class IssueTemplatesControllerTest < Redmine::ControllerTest
     assert_equal Tracker.find(1).name, global['tracker_name']
   end
 
+  # The orphaned-tracker note is for saved templates whose tracker is gone, not for a new one.
+  def test_new_form_does_not_call_the_template_orphaned
+    edit_permission
+    get :new, params: { project_id: 1 }
+    assert_response :success
+    assert_not_include I18n.t(:orphaned_template), response.body
+
+    IssueTemplate.find(1).update_column(:tracker_id, 999) # its tracker was deleted
+    get :show, params: { project_id: 1, id: 1 }
+    assert_include I18n.t(:orphaned_template), response.body
+  end
+
   def json_response
     ActiveSupport::JSON.decode @response.body
   end

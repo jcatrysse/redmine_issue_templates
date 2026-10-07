@@ -176,4 +176,11 @@ class NoteTemplatesControllerTest < Redmine::ControllerTest
     post :load, params: params
     assert_response :not_found
   end
+
+  def test_new_form_does_not_call_the_template_orphaned
+    Role.find(1).add_permission! :edit_issue_templates
+    get :new, params: { project_id: 1 }
+    assert_response :success
+    assert_not_include I18n.t(:orphaned_template), response.body
+  end
 end

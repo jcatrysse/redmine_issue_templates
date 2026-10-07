@@ -9,8 +9,9 @@
           <%= f.select :tracker_id, trackers.collect { |t| [t.name, t.id] }, { required: true },
                        required: true, label: l(:label_tracker) %>
 
-          <%= h note_template.tracker.present? ? note_template.tracker.name :
-                    l(:orphaned_template, default: 'Orphaned template from tracker') %>
+          <% if note_template.persisted? %>
+            <%= l(:orphaned_template, default: 'Orphaned template from tracker') %>
+          <% end %>
       <% else %>
           <%= f.select :tracker_id, trackers.collect { |t| [t.name, t.id] }, { required: true },
                        required: true, label: l(:label_tracker), selected: note_template.tracker.id %>
