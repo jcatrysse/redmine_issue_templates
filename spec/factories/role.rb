@@ -7,6 +7,10 @@ FactoryBot.define do
     issues_visibility { 'default' }
     users_visibility { 'all' }
     position { 1 }
+    # With redmine_view_issue_description installed (GEOxyz), opening an issue needs this permission.
+    after(:build) do |role|
+      role.permissions |= [:view_issue_description] if Redmine::AccessControl.permission(:view_issue_description)
+    end
     permissions { %i[
       edit_project
       manage_members

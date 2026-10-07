@@ -36,6 +36,8 @@ class IssuesControllerTest < Redmine::ControllerTest
     roles = Role.all
     roles.each do |role|
       role.permissions << :show_issue_templates
+      # with redmine_view_issue_description installed (GEOxyz) opening an issue needs this permission
+      role.permissions << :view_issue_description if Redmine::AccessControl.permission(:view_issue_description)
       role.remove_permission! :edit_issue_templates
       role.save
     end
