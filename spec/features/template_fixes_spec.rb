@@ -56,4 +56,18 @@ feature 'Template fixes', js: true do
     expect(page).to have_css('#json_generator input#issue_template_json_setting_field[type="date"]')
   end
 
+  # The fields of a template were matched against the tracker it was loaded with; after another
+  # tracker was chosen they still said which fields that tracker has.
+  scenario 'The built-in fields are checked again against a newly chosen tracker' do
+    Setting.send 'plugin_redmine_issue_templates=', 'enable_builtin_fields' => 'true'
+    Tracker.find(2).update!(core_fields: Tracker::CORE_FIELDS - %w[start_date])
+    template.update!(builtin_fields_json: { 'issue_start_date' => '2026-10-07' })
+    visit project_issue_template_path(Project.find('ecookbook'), template)
+    expect(page).to have_css('#fields_setting_display_area li', text: "#{I18n.t(:field_start_date)}: 2026-10-07")
+    select 'Feature request', from: 'issue_template[tracker_id]'
+    expect(page).to have_css('#fields_setting_display_area li',
+                             text: I18n.t(:unavailable_fields_for_this_tracker))
+    select 'Bug', from: 'issue_template[tracker_id]'
+    expect(page).to have_css('#fields_setting_display_area li', text: "#{I18n.t(:field_start_date)}: 2026-10-07")
+  end
 end

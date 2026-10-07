@@ -169,8 +169,9 @@ export default {
     await this.show(trackerPulldown?.value);
     this.loadField();
 
-    trackerPulldown.addEventListener('change', (event) => {
-      this.show(event.target.value);
+    trackerPulldown.addEventListener('change', async (event) => {
+      await this.show(event.target.value);
+      this.items = this.items.map((item) => ({ ...item, field: this.customFields[item.title] }));
     });
   },
   computed: {
