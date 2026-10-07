@@ -24,6 +24,7 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Complexity (1 trivial .. 5 rewrite) | 1 |
 | Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz + latest 7.0-stable), Rails 8.1.3.1, Ruby 3.3.6, PostgreSQL 16 and MariaDB 10.11 |
 | Branch head when this file was written | `30ff6e7` |
+| Decisions of Jan (2026-10-07) | DONE: icons switched to Redmine 7's SVG sprite (7b8f748, c097447), workflows manual only (3cd03db), no-offer and API 'name' recorded; PostgreSQL only from here. Tests green alone and with 30 other GEOxyz plugins; e2e 115 screenshots, 0 problems alone. See "Session of 2026-10-07" |
 | Migration session (2026-10-06) | DONE, see "Result of the migration session" below. Tests green on PostgreSQL and MariaDB (Redmine 7.0-stable-GEOxyz) and on 5.1-stable; e2e 105 screenshots, 0 problems on both databases; OpenAI review 3 rounds |
 
 ## Already on this branch
@@ -64,6 +65,8 @@ Actions the person doing the upgrade must take, or know about, for this plugin:
 - No data migration and no new setting. `rake redmine:plugins:migrate` has nothing new for this plugin (no new migration on this branch).
 - Run `bundle install` after updating the plugin: its Gemfile no longer removes Redmine's nokogiri pin, so the bundle follows core's `nokogiri ~> 1.19.1` again. Keep `bundle config set without 'development test'` in production: the plugin Gemfile declares rspec, factory_bot, pry and others in those groups.
 - If production ever runs RubyGems >= 4, the plugin Gemfile replaces core's commonmarker pin with `~> 2.6` (upstream a5ea172).
+- The plugin's icons are now Redmine 7's SVG icons; it no longer loads legacy-icons-compat.css and ships no PNG icons. Nothing to configure. A theme that styled the plugin's old `icon-template`/`icon-erase` background images has nothing left to style.
+- With redmine_itil_priority installed, a template's built-in field for Priority has no effect: that plugin replaces the priority select by its own widget (computed from impact and urgency). Set impact/urgency through custom fields in the template instead, if needed.
 - Behaviour users may notice (all are authorization fixes, see "Result"): non-administrators can no longer create, change or delete global templates; templates of another project are no longer reachable by id; members without "Show issue templates" no longer get the note template link on issues; template loading is limited to what the form offers in that project.
 - REST: `GET /projects/<id>/note_templates.json` now works (it answered 500) and returns the template's name under `name`; `issue_templates.json` works again for projects with inherited templates.
 
@@ -98,7 +101,7 @@ results quoted in the analysis come from it.
 1. **Start**: `git fetch && git checkout redmine70-migration && git pull`. Read this whole file,
    including the analysis report at the bottom. Do not reopen decisions recorded here.
 2. **Baseline, before you change anything**:
-   - the plugin's tests on Redmine 7.0-stable-GEOxyz with PostgreSQL and with MariaDB;
+   - the plugin's tests on Redmine 7.0-stable-GEOxyz with PostgreSQL;
    - a real running Redmine with this plugin (`./.codex/start_server.sh`) and the browser run
      (`./.codex/e2e.sh`: smoke over every page the plugin adds, plus the core issue flows).
    Write the numbers here. Something already broken now is a finding, not your regression.
@@ -110,9 +113,9 @@ results quoted in the analysis come from it.
 4. **GEOxyz changes**: go through the table above, one item at a time. Each kept or re-made change
    is its own commit with a test that proves it. Record the verdict in the table.
 5. **Work list**: then the numbered list, in order. One concern per commit.
-6. **Portability**: everything must run on Redmine's supported databases (PostgreSQL,
-   MySQL/MariaDB; SQLite where the plugin already supports it). Migrations must be reversible and
-   are run down and up on PostgreSQL and MariaDB.
+6. **Portability**: GEOxyz runs PostgreSQL 16 only (decided by Jan, 2026-10-07): tests, migrations
+   (reversible, run down and up) and the e2e set on PostgreSQL. Keep SQL portable where that costs
+   nothing; a MariaDB/MySQL-only problem is a note here, not a blocker.
 7. **Together**: run with the other GEOxyz plugins installed (the migration kit's harness, or
    `RMP_EXTRA_PLUGINS`). A failure that only appears in combination is a finding to record here.
 8. **End to end, visually, every function**: on the real Redmine from `start_server.sh`
@@ -131,7 +134,6 @@ results quoted in the analysis come from it.
      reads them; API through `t.page.request`) and record command and result.
    - Before pictures where behaviour or layout changes: the branch GEOxyz runs today, on
      Redmine 5.1, same scenarios, `RMP_E2E_OUT=docs/e2e/before`.
-   - Run the whole e2e set once on MariaDB as well (`RMP_DB=mariadb`, then `start_server.sh --reset`).
 9. **Independent review**: first your own, adversarial: re-read the whole diff as if someone
    else wrote it and you are paid to reject it. Then, **when `OPENAI_API_KEY` is set in the
    session**, `./.codex/openai_review.sh`: it sends the diff of this branch to an OpenAI model
@@ -176,8 +178,12 @@ results quoted in the analysis come from it.
   (on by default: `t.sudo()` in a scenario). The breaker list is in the migration kit's CHECKLIST.md.
 - **Locales**: keep the locales the plugin ships in sync; translate a new key by matching the
   closest existing key in the same file, not from scratch; do not add new languages.
-- **5.1 compatibility**: prefer fixes that also run on Redmine 5.1 so they can be merged early;
-  say so when a fix cannot.
+- **No Redmine 5.1** (decided by Jan, 2026-10-07): GEOxyz goes straight to Redmine 7; nothing is
+  backported or cherry-picked to the default branch or the branch production runs today, and
+  `redmine70-migration` goes live with Redmine 7. Do not add code paths that exist only for 5.1.
+- **Core patches**: a Redmine core method that other installed plugins also patch is patched with
+  `prepend`, never with `alias_method` (decided by Jan, 2026-10-07).
+- **deface**: a plugin that depends on deface requires it without a version constraint.
 - **Git**: work on `redmine70-migration` only; never push to the default branch; never force-push
   a branch someone else uses. Descriptive commit messages (what and why). Push after every
   commit, together with the updated status in this file: a cloud session can stop at a usage
@@ -188,8 +194,8 @@ results quoted in the analysis come from it.
 ## Definition of done
 
 - All items of the work list are done or explicitly deferred with a reason, in this file.
-- The plugin's tests are green on Redmine 7.0-stable-GEOxyz with PostgreSQL and MariaDB
-  (numbers in this file); boot, production-like eager load, migrations up/down OK.
+- The plugin's tests are green on Redmine 7.0-stable-GEOxyz with PostgreSQL, alone and with the
+  other GEOxyz plugins installed (numbers in this file); boot, production-like eager load, migrations up/down OK.
 - Every function in the inventory exercised end to end on a real running Redmine, with and
   without permissions and on its failure paths; `./.codex/e2e.sh` green; screenshots looked at,
   committed in `docs/e2e/` and listed.
@@ -276,6 +282,7 @@ Every screenshot was looked at. Findings from looking: Textile seed text on a Co
 | REST API: issue_templates.json, note_templates.json, list_templates.json, load.json; 403/401 refusals | API key | rest_api.mjs | rest-api-allowed, rest-api-refused |
 | Rake tasks apply/unapply inherit to child projects | command line | run by hand, see "Test results" | - |
 | Every plugin page as admin | routes | .codex/e2e/smoke.mjs | smoke-01..30 |
+| Redmine 7 SVG icons on every plugin screen (decision q3), no legacy CSS or PNG; refusals for reporter and outsider | admin menu, global and project pages, forms, issue form, popups | icons.mjs | icons-admin-menu, -global-issue-templates, -global-issue-template-form, -project-issue-templates, -template-show, -issue-form, -dialog-apply, -note-popup, -reporter, -outsider |
 
 No mail, cron, macro or webhook in this plugin.
 
@@ -292,13 +299,128 @@ Redmine 7.0-stable-GEOxyz on PostgreSQL with redmine_issue_field_visibility, red
 
 - `spec/features/drag_and_drop_spec.rb:24` (issue templates) is intermittent in this container: in failing runs no mousedown reaches the page at all (a capture listener on document saw nothing, while elementFromPoint is the sort handle; in passing runs mousedown, sortstart and sortupdate fire). Fails on the code before any change of this branch too, on 7.0 and 5.1; the final runs on PostgreSQL, MariaDB and 5.1 passed. Test left unchanged; looks like chromedriver input timing, not the plugin.
 - Not changed, noted: `_list_templates.api.rsb` returns the tracker id under `tracker_name` for the first group; a new note/issue template form shows "Orphaned template from tracker" next to an empty tracker select until one is chosen; `apply_global_template_to_all_projects` only tested as a setting plus the load rule (templates hide global ones when the project has its own, upstream behaviour).
+- Upstream JS/view bugs found by the OpenAI review of 2026-10-07, not fixed in passing (separate
+  change if wanted): the built-in field generator offers a text box for date fields
+  (AVAILABLE_FORMATS has 'data' for 'date'); single-select list values can mark substring options
+  ('1' also selects '10'); changing the tracker does not refresh the generator's items; the
+  #errorExplanation check in loadTemplate never matches; CKEditor revert uses jQuery's text() on a
+  DOM node (only with a CKEditor plugin); the apply arrow in the template dialog has no pointer
+  cursor ('cursor: pointer;' written into the class); the global note template's Delete link uses
+  name instead of title for its tooltip.
+- `spec/rails_helper.rb` still has the guarded autoload_paths.dup lines of GEOxyz 751e719, kept
+  "for 5.1/6.1"; not needed on Redmine 7 (tried) and could go now that 5.1 is dropped.
+- Kit issues met (2026-10-07): a `public/assets/.manifest.json` left by an earlier production start
+  makes the test environment serve the old precompiled JS (two feature specs failed until the
+  server was started again); `redmine_clone.sh` with another `REDMINE_DIR` copies the default
+  `redmine/` checkout and `node_modules` into that instance's plugin folder (removed by hand).
 - Kit issues met: `.codex/test_setup.sh` runs `$SUDO -u postgres` with an empty `$SUDO` as root (role created by hand, then `RMP_PROVISION_DB=0`); rsync was missing; a server from another `REDMINE_DIR` on port 3000 makes `start_server.sh` report success while the old server keeps answering.
+
+## Session of 2026-10-07 (Jan's decisions)
+
+### Commits
+
+| commit | what |
+|---|---|
+| 8678766 | Jan's decisions recorded by the coordinating session (docs/DECISIONS-2026-10-07.md) |
+| 7b8f748 | q3: every icon from Redmine 7's SVG sprite; legacy-icons-compat.css and the plugin's PNGs gone; Vue generator and "template applied" message get server-rendered sprites; handlers read event.currentTarget; JS bundle rebuilt (unchanged sources rebuild byte for byte). Test: layout_test (failed before) |
+| c097447 | q3: project list toggle in the global template forms gets core's angle arrow and flips it (found by icons.mjs). Test: layout_test |
+| f11c9b7 | e2e scenario icons.mjs |
+| 3cd03db | general: the two inherited upstream workflows (check-assets-js on pull_request, greetings on issues) now workflow_dispatch only. Test: github_workflows_test (failed before) |
+| f9ec8d5 | combined run: the rspec setup restores Redmine's built-in groups after truncating (with redmine_stealth /login answered 500 in tests). Test: spec/models/builtin_groups_spec (failed before) |
+| 4e175be | combined run: test roles get view_issue_description when redmine_view_issue_description is installed (11 tests failed in the combination) |
+| 7493da5 | e2e seed and settings scenario for the combined run |
+| 7b2cfa4 | e2e evidence, full PostgreSQL run |
+
+q1 and q2 need no code (recorded under "Decided by Jan"). deface: not used. alias_method: none in this plugin.
+
+### Tests (Redmine 7.0-stable-GEOxyz, PostgreSQL 16)
+
+| run | minitest | rspec (incl. 43 selenium feature specs) |
+|---|---|---|
+| this plugin alone | 104 runs, 410 assertions, 0 failures, 0 errors | 150 examples, 0 failures, 2 pending (upstream) |
+| with 30 other GEOxyz plugins (all public ones with a `redmine70-migration` branch, 2026-10-07) | 104 runs, 410 assertions, 0 failures, 0 errors | 150 examples, 0 failures, 2 pending |
+
+The 30: redmine_plugin_computed_custom_field, redmine_drawio, redmine_mermaid_macro, redmine_ai_summary,
+redmine_extended_api, bless-this-redmine-sso, redmine_wiki_extensions, redmine_view_issue_description,
+redmine_more_previews, redmine_itil_priority, redmine_issue_field_visibility, redmine_mail_digest,
+redmine_ldap_sync, redmine_parent_child_filters, redmine_issue_view_columns, redmine_subtask,
+redmine_inline_edit_issues, redmine_stealth, redmine_custom_workflows, redmine_issue_todo_lists2,
+redmine_reporter_dashboards, redmine_paste_as_wiki_tables, redmine_project_workflows,
+redmine_tint_issues, redmine_user_specific_theme, redmine-view-customize, redmine_editauthor,
+redmine_description_macros, redmine_impersonate, redmine_depending_custom_fields. The private ones
+(redmine_agile, redmine_checklists, redmine_contacts, redmine_contacts_helpdesk, redmine_people,
+redmine_tags, redmine_zenedit, redmine_ai_triage, redmine_context_menu_actions) were not reachable
+from this session (no read access) and are not in the run.
+
+### End to end (real Redmine 7, production mode, PostgreSQL, `start_server.sh --reset`)
+
+| run | scenarios | screenshots | problems |
+|---|---|---|---|
+| alone (committed in docs/e2e) | smoke, core + 7 plugin scenarios | 115 | 0 |
+| with the 30 plugins | the same | 115 | 2, both from other plugins (below) |
+
+Every screenshot of the alone run was looked at after the icon switch.
+
+Findings of the combined run, none caused by this plugin:
+- **Project > Settings answers HTTP 500**: `undefined method dcf_relevant_custom_fields` in the
+  settings tab of **redmine_depending_custom_fields**. It does
+  `ProjectsHelper.include(ProjectCustomFieldConfigurationHelper)` after ProjectsHelper is already
+  mixed into the view class, so the tab cannot see its helper (Ruby does not propagate a later
+  include). With only 4 plugins (2026-10-06) the page answered 200, so it depends on load order.
+  This plugin does not touch ProjectsHelper or project_settings_tabs and loads after it. The issue
+  list and an issue page answer 200 in the combination (smoke and core flows).
+- **redmine_itil_priority** replaces the priority select, so a template's built-in Priority value
+  is not applied (settings.mjs reports it). See "After the upgrade".
+- **redmine_view_issue_description**: opening an issue needs its permission; the e2e seed now grants
+  it to the Reporter role when the plugin is present, as GEOxyz roles have it.
+- Test environment only: **redmine_stealth**'s menu condition needs Redmine's built-in groups
+  (fixed on this side, f9ec8d5); a shoulda-context 2.0 test gem from another plugin crashes
+  minitest's reporter at the first failure, so one failure hides the rest of a combined minitest run.
+
+### Review of 2026-10-07
+
+- Own review of the new commits: nothing further found; escaping of the server-rendered svg markup
+  (`j` in the script, `to_json` for the generator) checked.
+- OpenAI review (gpt-5) of 8678766..7b2cfa4: docs/reviews/openai-2026-10-07-7b2cfa4.md, 9 findings,
+  all on pre-existing upstream code that the rebuilt bundle brought into the diff; 0 accepted for
+  this change, each with a Resolution line. The real ones are listed under "Open items".
 
 ### Open questions for Jan
 
-1. **Behaviour changes from the security fixes.** All of them remove access that was never meant to exist (non-admin writes on global templates, other projects' templates by id, template text for users without the permission). Options: (a) keep as built (recommended); (b) also offer them upstream to agileware-jp as a PR, since every Redmine installation with this plugin has the same holes (recommended, Jan's call because it publishes the findings).
-2. **REST note_templates.json** now returns `name` instead of `title` (the endpoint always answered 500 before, so no client can depend on it). Options: keep `name` (recommended, it is the model's field) or emit both.
-3. **Raster icons.** Kept upstream's approach (legacy-icons-compat.css on the plugin's screens) instead of converting every view to `sprite_icon`, which would drop Redmine 5.1 support and is a large view rewrite. Recommended: keep until GEOxyz leaves 5.1, then convert.
+None open. All answered on 2026-10-07, see "Decided by Jan".
+
+### Decided by Jan (2026-10-07)
+
+Answered by Jan Catrysse on 2026-10-07 in the coordinating session
+(https://claude.ai/code/session_01GiSsYPm3bxvqrpZkdCxNoi), recorded in docs/DECISIONS-2026-10-07.md;
+his notes verbatim. Final.
+
+General, for every GEOxyz plugin:
+- Straight to Redmine 7, no backports to 5.1, nothing cherry-picked to the default branch or the
+  branch production runs today; `redmine70-migration` goes live with Redmine 7; no 5.1-only code
+  paths. Rules updated. The 5.1 numbers and before pictures above stay as history.
+- PostgreSQL 16 only; MariaDB/MySQL runs no longer required. Rules updated. The earlier MariaDB
+  results stay as history.
+- deface without a version constraint: not applicable, this plugin does not use deface.
+- `prepend`, never `alias_method`, for core methods other plugins also patch: checked, this plugin
+  has no `alias_method` and patches no core method (only view hooks, its own controllers and
+  models). Project > Settings, the issue list and an issue page answer 200 with the other GEOxyz
+  plugins installed (see "Together with other GEOxyz plugins").
+- GitHub Actions manual only: unchanged, the workflow keeps `workflow_dispatch` only.
+
+This plugin:
+1. **q1, offer the closed authorization holes to agileware-jp?** Jan chose B: "Niet aanbieden,
+   alleen bij GEOxyz" (De lekken worden niet publiek gemaakt, maar andere installaties blijven
+   kwetsbaar en GEOxyz houdt de fixes zelf bij.). No code: nothing is reported or offered upstream.
+   GEOxyz keeps the fixes on its own branch; at every upstream sync check that they survive
+   (the functional tests of 8dacdd6, 21c76a5, e60784b, cb732a1, 7cd3445 fail if one is lost).
+2. **q2, note_templates.json: 'name' or also 'title'?** Jan chose A: "Alleen 'name' (zo laten)"
+   (Gelijk aan de veldnaam in de plugin, zonder extra werk.). Already built in 376dbf6, kept.
+3. **q3, when to switch to Redmine 7's icons?** Jan chose C: "Nu meteen omzetten" (Nieuwe iconen al
+   bij de upgrade, maar een grote herschrijving van de schermen vlak ervoor.). Built:
+   7b8f748 (every icon from the SVG sprite, legacy-icons-compat.css and the plugin's PNGs gone, JS
+   bundle rebuilt) and c097447 (project list toggle arrow), tested by
+   test/integration/layout_test.rb and the e2e scenario test/e2e/icons.mjs.
 
 ## Analysis report (2026-10-06, Dutch)
 
