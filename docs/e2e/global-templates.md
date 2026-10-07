@@ -1,6 +1,6 @@
 # global-templates
 
-Run 2026-10-07T17:13:10.321Z against http://127.0.0.1:3000.
+Run 2026-10-07T19:42:26.670Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
