@@ -1,7 +1,7 @@
 name: Check assets/javascripts/issue_templates.js is up-to-date
 
 on:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
