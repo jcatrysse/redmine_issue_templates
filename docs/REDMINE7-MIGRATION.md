@@ -24,6 +24,7 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Complexity (1 trivial .. 5 rewrite) | 1 |
 | Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz + latest 7.0-stable), Rails 8.1.3.1, Ruby 3.3.6, PostgreSQL 16 and MariaDB 10.11 |
 | Branch head when this file was written | `30ff6e7` |
+| Vue 3 (2026-10-27, Jan after an Aikido scan) | DONE: vue 2.7.14 -> 3.5.44, vite 3.2.6 -> 8.3.5, axios 1.3.6 -> 1.21.0 (20f9d6e); npm audit 0 vulnerabilities; generator pixel-identical to Vue 2 in e2e. Tests 112 runs, 159 examples, 0 failures (drag_and_drop_spec timing-sensitive, see below); e2e 134 screenshots, 0 problems. See "Vue 3 (2026-10-27)" |
 | Round 2 (2026-10-07, Jan: "Nu meteen herstellen") | DONE: 9 small upstream bugs fixed, one commit each with a test that fails without it (1957c44..f815d42); 2 review findings were no bug. Tests 112 runs, 155 examples, 0 failures; e2e 123 screenshots, 0 problems; OpenAI review 5 findings, none a bug. See "Round 2: the small upstream bugs" |
 | Decisions of Jan (2026-10-07) | DONE: icons switched to Redmine 7's SVG sprite (7b8f748, c097447), workflows manual only (3cd03db), no-offer and API 'name' recorded; PostgreSQL only from here. Tests green alone and with 30 other GEOxyz plugins; e2e 115 screenshots, 0 problems alone. See "Session of 2026-10-07" |
 | Migration session (2026-10-06) | DONE, see "Result of the migration session" below. Tests green on PostgreSQL and MariaDB (Redmine 7.0-stable-GEOxyz) and on 5.1-stable; e2e 105 screenshots, 0 problems on both databases; OpenAI review 3 rounds |
@@ -456,6 +457,99 @@ project-issue-templates 14, rest-api 2, settings 13 screenshots, 0 problems. Ope
 7b9870a..f815d42 (docs/reviews/openai-2026-10-07-f815d42.md): 5 findings, none a bug (the orphan
 message sits inside the `tracker.blank?` branch; Journal has `belongs_to :issue`), each with a
 Resolution line. The run together with the other GEOxyz plugins was not repeated for round 2.
+
+## Vue 3 (2026-10-27)
+
+Decided by Jan on 2026-10-27 after an Aikido scan: Vue 2 has had no release since the end of 2023
+and every 2.x has an unfixed ReDoS (GHSA-5j4c-8p2g-v4jx). Vue is used only by the built-in field
+generator on the template forms (scripts/template_fields.js and scripts/components); the rest of
+scripts/issue_templates.js is plain JavaScript with axios.
+
+### Commits
+
+| commit | what |
+|---|---|
+| e351c19 | e2e scenario test/e2e/builtin_fields.mjs (generator with multiple and single list custom fields, watchers, delete, reset, global template, setting off, reporter refused; template applied on a new issue incl. the watchers) and the Vue 2 before pictures in docs/e2e/vue2-before (98, 0 problems) |
+| 20f9d6e | the move to Vue 3, bundle rebuilt, package-lock.json; spec/features/template_fields_spec.rb |
+| f96f676 | OpenAI review, 1 finding, no bug |
+
+### Versions and audit
+
+| package | before | after |
+|---|---|---|
+| vue | 2.7.14 | 3.5.44 |
+| vite | 3.2.6 | 8.3.5 |
+| axios | 1.3.6 | 1.21.0 |
+| @vitejs/plugin-vue2 / @vitejs/plugin-vue | 1.1.2 | 6.0.10 |
+| @vitejs/plugin-legacy | 2.3.1 | removed: never used in vite.config.js, and v2 does not accept vite 8 |
+
+`npm audit` before: 21 vulnerabilities (2 low, 5 moderate, 13 high, 1 critical); runtime only
+(`--omit=dev`): 7 (1 low, 1 moderate, 4 high, 1 critical: axios, follow-redirects, form-data, vue,
+and postcss/nanoid/source-map-js through Vue 2's compiler). After: 0, also with the dev
+dependencies. eslint 8, prettier 2 and eslint-plugin-vue 9 stay (dev only, no finding; the lint
+config already used `plugin:vue/vue3-essential`); `eslint scripts` is clean.
+
+Bundle assets/javascripts/issue_templates.js: 141,111 -> 175,731 bytes, gzip 45,296 -> 55,310. No
+`document.write` before or after. The bundle stays an ES module loaded with `type="module"`.
+
+### What changed in the code, and why
+
+- template_fields.js: `createApp` instead of `new Vue`, with only the component's three props (the
+  other settings would otherwise become attributes on the root). Vue 3 mounts inside its target,
+  Vue 2 replaced it, so the app is mounted on a detached element that then replaces
+  `#json_generator`: still exactly one `#json_generator`.
+- plugins: `app.config.globalProperties` instead of `Vue.prototype`.
+- FieldValue.vue: `v-model` through `modelValue` / `update:modelValue`. Redmine's CSS matches
+  `select[multiple=multiple]`; Vue 3 writes `multiple=""`, which put a dropdown arrow on the multiple
+  select, so the attribute is written as `multiple="multiple"` (found by the before/after pixel diff).
+- DisplayArea.vue: Vue 3's whitespace handling dropped the space Vue 2 kept between an entry and its
+  delete icon; now explicit. `whitespace: 'preserve'` was tried and rejected: it adds a space before
+  every select and shifts the generator.
+- Watcher append: unchanged, still `eval` of the response of Redmine's watchers/append.js; Vue 3 does
+  not touch it. Note: an indirect `(0, eval)(data)` would let the minifier rename the bundle's
+  top-level names (141 kB instead of 176 kB); not done, it was not required.
+
+Checked beyond e2e: the generator rendered by the Vue 2 and the Vue 3 bundle in the same page
+harness, through every field format, add, delete, apply, reset and a tracker change: identical JSON
+and element counts at every step, no JS error; the remaining DOM differences are attribute spellings
+(`disabled=""` instead of `disabled="disabled"` on the empty option of a multiple select, a mirrored
+`value=""` on inputs) that no CSS in Redmine or the plugin matches.
+
+### Tests (7.0-stable-GEOxyz 578730a, PostgreSQL 16)
+
+| | minitest | rspec (incl. selenium feature specs) |
+|---|---|---|
+| before (Vue 2) | 112 runs, 428 assertions, 0 failures | 155 examples, 0 failures, 2 pending |
+| after (Vue 3) | 112 runs, 428 assertions, 0 failures | 159 examples, 0 failures, 2 pending (3 of 5 full runs; see below) |
+
+The 4 new examples (template_fields_spec.rb) each fail against a build without their point (naive
+mount, `multiple` without `.attr`, no space) and pass on Vue 2 and on the result.
+
+- **drag_and_drop_spec.rb** "Can drag and drop on Issue Templates" is timing-sensitive, not caused by
+  this change: run alone it fails 6 of 6 times with the Vue 2 bundle too; in full runs it failed 2 of
+  5 times with Vue 3 and 0 of 4 with Vue 2. Any extra browser round trip before or after the drag
+  makes it pass (sortable already initialised, `wait_for_ajax` correct when probed), so the root cause
+  is not found; the test is unchanged.
+- **Test tooling trap**: after `start_server.sh` (production) has precompiled
+  `redmine/public/assets`, the test environment serves that precompiled copy of the plugin's script
+  instead of the plugin's current file, so a rebuilt bundle is not what the feature specs test. Move
+  or delete `redmine/public/assets` before `test_plugin.sh`. All numbers above were taken without it.
+
+### End to end (`start_server.sh --reset`, `e2e.sh`)
+
+smoke 30, core 6, builtin-fields 11, fixes 8, global-templates 16, icons 10, new-issue-template 10,
+note-templates 14, project-issue-templates 14, rest-api 2, settings 13: 134 screenshots, 0 problems,
+same counts as with Vue 2. Pixel diff against docs/e2e/vue2-before: every generator screenshot
+(builtin-fields-*, fixes-generator-*, settings-builtin-generator) is identical, except the issue
+number in builtin-fields-issue-created and a focus ring in settings-builtin-applied; the other
+differences are timestamps, ids and fade-ins on pages without Vue. All builtin-fields screenshots
+looked at.
+
+### Review
+
+Own review of the diff: nothing further. OpenAI review (gpt-5, af87c8b..20f9d6e):
+docs/reviews/openai-2026-10-27-20f9d6e.md, 1 finding (top-level names of the bundle leaking): no
+bug, the bundle is an ES module; checked in Chromium, Resolution line in the file.
 
 ## Analysis report (2026-10-06, Dutch)
 
