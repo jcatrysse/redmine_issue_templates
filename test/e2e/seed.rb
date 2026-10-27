@@ -47,6 +47,17 @@ e2e_issue_template(project, feature, 'E2E feature request',
 e2e_issue_template(private_project, bug, 'E2E private template',
                    issue_title: 'Private', description: 'Confidential text of the private project')
 
+# custom fields and a template for the built-in field generator (builtin_fields.mjs)
+def e2e_list_field(name, values, multiple, project, tracker)
+  IssueCustomField.find_by(name: name) ||
+    IssueCustomField.create!(name: name, field_format: 'list', possible_values: values, multiple: multiple,
+                             is_for_all: false, projects: [project], trackers: [tracker])
+end
+
+e2e_list_field('E2E component', %w[Backend Frontend UI], true, project, bug)
+e2e_list_field('E2E severity', %w[Minor Major Blocker], false, project, bug)
+e2e_issue_template(project, bug, 'E2E builtin fields', issue_title: 'Fields', description: 'Template with built-in fields')
+
 unless GlobalIssueTemplate.exists?(title: 'E2E global template')
   GlobalIssueTemplate.create!(title: 'E2E global template', tracker: bug, author: admin, enabled: true,
                               issue_title: 'Global: ', description: 'Text of the global template',
@@ -96,6 +107,8 @@ ids = {
   global_issue_templates: GlobalIssueTemplate.pluck(:title, :id).to_h,
   global_note_templates: GlobalNoteTemplate.pluck(:name, :id).to_h,
   projects: Project.where(identifier: %w[e2e-project e2e-private e2e-sub]).pluck(:identifier, :id).to_h,
-  trackers: Tracker.pluck(:name, :id).to_h
+  trackers: Tracker.pluck(:name, :id).to_h,
+  users: User.where(login: %w[admin manager reporter outsider]).pluck(:login, :id).to_h,
+  custom_fields: IssueCustomField.where(name: ['E2E component', 'E2E severity']).pluck(:name, :id).to_h
 }
 File.write(Rails.root.join('tmp', 'e2e-issue-templates.json'), JSON.pretty_generate(ids))
