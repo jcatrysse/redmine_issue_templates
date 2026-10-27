@@ -2,8 +2,8 @@
   <span>
     <textarea
       id="issue_template_json_setting_field"
-      :value="value"
-      @input="$emit('input', $event.target.value)"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       rows=6
       :placeholder="placeholder"
       v-if="format == 'text'">
@@ -12,8 +12,8 @@
       id="issue_template_json_setting_field"
       type="text"
       :placeholder="placeholder"
-      :value="value"
-      @input="$emit('input', $event.target.value)"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       v-if="format == 'string'" />
     <input
       id="issue_template_json_setting_field"
@@ -21,18 +21,18 @@
       :placeholder="placeholder"
       :max="max"
       :min="min"
-      :value="value"
-      @input="$emit('input', $event.target.value)"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       v-if="format == 'int'" />
     <input
       id="issue_template_json_setting_field"
       type="date"
-      :value="value"
-      @input="$emit('input', $event.target.value)"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       v-if="format == 'date'" />
     <select
-      :value="value"
-      @change="$emit('input', $event.target.value)"
+      :value="modelValue"
+      @change="$emit('update:modelValue', $event.target.value)"
       v-if="format == 'ratio'">
       <option />
       <option :key="ratio" v-for="ratio in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]">
@@ -41,11 +41,11 @@
     </select>
     <select
       id="value_selector"
-      :multiple="multiple"
+      :multiple.attr="multiple ? 'multiple' : null"
       @change="handleChangeSelect"
       v-if="['list', 'bool'].includes(format)">
       <option :disabled="multiple" />
-      <option :selected="value?.includes?.(val)" :key="val" v-for="val in options">{{ val }}</option>
+      <option :selected="modelValue?.includes?.(val)" :key="val" v-for="val in options">{{ val }}</option>
     </select>
   </span>
 </template>
@@ -55,7 +55,7 @@ export default {
   name: 'FieldValue',
   props: {
     placeholder: String,
-    value: [String, Number, Array],
+    modelValue: [String, Number, Array],
     format: String,
     min: Number,
     max: Number,
@@ -67,11 +67,12 @@ export default {
       }
     }
   },
+  emits: ['update:modelValue'],
   methods: {
     handleChangeSelect(event) {
       const selected = [...event.target.options].filter((opt) => opt.selected);
       const values = selected.map((opt) => opt.value);
-      this.$emit('input', values);
+      this.$emit('update:modelValue', values);
     },
   },
 };

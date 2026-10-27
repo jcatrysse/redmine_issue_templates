@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 export const CustomFieldPlugin = {
-  install(Vue, options = {}) {
+  install(app, options = {}) {
     const {
       baseUrl,
       templateId,
       projectId,
     } = options;
-    Vue.prototype.getCustomFields = async (trackerId) => {
+    app.config.globalProperties.getCustomFields = async (trackerId) => {
       const params = {
         tracker_id: trackerId,
         template_id: templateId,

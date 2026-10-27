@@ -10,8 +10,7 @@
             {{ l('unavailable_fields_for_this_tracker') }}
             : {{ item.value }} / {{ item.title }}
           </i>
-        </span>
-        <i class="icon-only icon-del" v-on:click="$emit('delete', item)" v-html="icon('del')"></i>
+        </span> <i class="icon-only icon-del" v-on:click="$emit('delete', item)" v-html="icon('del')"></i>
       </li>
     </ul>
   </div>
@@ -28,5 +27,6 @@ export default {
       },
     },
   },
+  emits: ['delete'],
 };
 </script>

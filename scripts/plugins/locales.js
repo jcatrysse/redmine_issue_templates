@@ -1,6 +1,6 @@
 export const LocalePlugin = {
-  install(Vue, locale) {
-    Vue.prototype.l = (key) => {
+  install(app, locale) {
+    app.config.globalProperties.l = (key) => {
       return locale[key];
     };
   }
